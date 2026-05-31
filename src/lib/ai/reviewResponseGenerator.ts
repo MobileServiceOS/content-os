@@ -2,7 +2,6 @@
 // SEO-friendly), sentiment from the star rating. Never opens with a banned phrase
 // (enforced by the engine) and never automatically admits fault.
 import { generateBlock as engineGenerate } from './engine';
-import { mockProvider } from './provider.mock';
 import { toRecord, type GeneratedRecord } from './shared';
 import type { GenerationProvider } from './types';
 import type { ReviewSentiment } from './pools/reviewResponses';
@@ -34,7 +33,7 @@ export function generateReviewResponse(
   req: ReviewRequest,
   brand: BrandSettings,
   recent: RecentByType,
-  provider: GenerationProvider = mockProvider,
+  provider: GenerationProvider,
 ): ReviewOutput {
   const sentiment = sentimentFor(req.rating);
   const genReq: GenerationRequest = {

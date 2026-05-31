@@ -22,20 +22,18 @@ import { ReviewAgent } from './ReviewAgent';
 import { SocialAgent } from './SocialAgent';
 import { RepurposeAgent } from './RepurposeAgent';
 import { BrandGuardianAgent } from './BrandGuardianAgent';
-import { generateContent } from '../ai/contentGenerators';
-import { generateScript } from '../ai/scriptGenerator';
-import { generateReviewResponse } from '../ai/reviewResponseGenerator';
-import { generateSocialReplies } from '../ai/socialReplyGenerator';
-import { repurposeContent } from '../ai/repurposeGenerator';
+import { getActiveProvider } from '../ai/providers';
 
-// Default registry wired with the real generators. The agents wrap generation
-// with BrandGuardian validation; the page/hook layer records history separately.
+// Default registry routed through the active ContentProvider (the provider layer)
+// — never a concrete provider. Swapping providers requires no change here. The
+// agents wrap generation with BrandGuardian validation; the page/hook layer
+// records history + cost separately.
 export const agents = {
-  content: new ContentAgent((input, ctx) => generateContent(input, ctx.brand, ctx.recent).result),
-  script: new ScriptAgent((input, ctx) => generateScript(input, ctx.brand, ctx.recent).result),
-  review: new ReviewAgent((input, ctx) => generateReviewResponse(input, ctx.brand, ctx.recent).result),
-  social: new SocialAgent((input, ctx) => generateSocialReplies(input, ctx.brand, ctx.recent).result),
-  repurpose: new RepurposeAgent((input, ctx) => repurposeContent(input, ctx.brand, ctx.recent).result),
+  content: new ContentAgent(async (input, ctx) => (await getActiveProvider().generateContent(input, ctx.brand, ctx.recent)).result),
+  script: new ScriptAgent(async (input, ctx) => (await getActiveProvider().generateScript(input, ctx.brand, ctx.recent)).result),
+  review: new ReviewAgent(async (input, ctx) => (await getActiveProvider().generateReviewResponse(input, ctx.brand, ctx.recent)).result),
+  social: new SocialAgent(async (input, ctx) => (await getActiveProvider().generateSocialReply(input, ctx.brand, ctx.recent)).result),
+  repurpose: new RepurposeAgent(async (input, ctx) => (await getActiveProvider().repurposeContent(input, ctx.brand, ctx.recent)).result),
   brandGuardian: new BrandGuardianAgent(),
 } as const;
 

@@ -1,7 +1,6 @@
 // Content Generator: hook + caption + CTA + on-screen text + hashtags + local
 // keywords, each run through the uniqueness/quality engine.
 import { generateBlock as engineGenerate } from './engine';
-import { mockProvider } from './provider.mock';
 import { toRecord, aggregateQuality, type GeneratedRecord } from './shared';
 import type { GenerationProvider } from './types';
 import type {
@@ -27,7 +26,7 @@ export function generateContent(
   req: GenerationRequest,
   brand: BrandSettings,
   recent: RecentByType,
-  provider: GenerationProvider = mockProvider,
+  provider: GenerationProvider,
 ): ContentOutput {
   const hookER = engineGenerate(provider, { type: 'hook', req }, brand, recent.hook ?? []);
   const capER = engineGenerate(provider, { type: 'caption', req }, brand, recent.caption ?? []);

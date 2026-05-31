@@ -2,12 +2,13 @@
 // generated outputs with their uniqueness/brand metadata + fingerprint.
 import { useEffect, useState } from 'react';
 import { addDoc, limit, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { generationHistoryCol } from '../lib/firebase/paths';
+import { generationHistoryCol, generationCostsCol } from '../lib/firebase/paths';
 import { withAudit } from '../lib/firebase/converters';
 import { useBusiness } from '../context/BusinessContext';
 import { fingerprint } from '../lib/uniqueness/fingerprint';
 import type { GenerationHistoryEntry } from '../types/models';
 import type { GeneratedRecord } from '../lib/ai/shared';
+import type { GenerationCost } from '../lib/ai/cost';
 
 function stripUndefined<T extends object>(o: T): T {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
@@ -59,5 +60,25 @@ export function useGenerationHistory(max = 100) {
     );
   }
 
-  return { entries, recordMany };
+  /** Persist a generation's cost summary for future analytics. */
+  async function recordCost(
+    uid: string,
+    generatorType: string,
+    cost: GenerationCost,
+  ): Promise<void> {
+    if (!businessId) return;
+    await addDoc(
+      generationCostsCol(businessId),
+      withAudit(businessId, uid, {
+        generatorType,
+        provider: cost.provider,
+        tokens: cost.tokens,
+        estimatedCostUsd: cost.estimatedCostUsd,
+        generationTimeMs: cost.generationTimeMs,
+        regenerationCount: cost.regenerationCount,
+      }),
+    );
+  }
+
+  return { entries, recordMany, recordCost };
 }

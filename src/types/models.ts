@@ -105,6 +105,16 @@ export interface GenerationHistoryEntry extends Audit {
   // createdAt (from Audit) is the timestamp.
 }
 
+export interface GenerationCostEntry extends Audit {
+  id: string;
+  generatorType: string; // 'content' | 'script' | 'review' | 'social' | 'repurpose'
+  provider: string; // 'mock' | 'claude' | 'openai' | 'gemini'
+  tokens: number;
+  estimatedCostUsd: number;
+  generationTimeMs: number;
+  regenerationCount: number;
+}
+
 export interface AppUser {
   uid: string;
   email: string;

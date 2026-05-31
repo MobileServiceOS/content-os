@@ -97,6 +97,13 @@ service cloud.firestore {
         allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
         allow update, delete: if false;
       }
+
+      // Generation cost tracking — append-only, for future analytics.
+      match /generationCosts/{id} {
+        allow read: if isMember(bid);
+        allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow update, delete: if false;
+      }
     }
 
     // Default deny everything else.

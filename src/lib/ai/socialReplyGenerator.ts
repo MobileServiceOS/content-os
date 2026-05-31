@@ -1,7 +1,6 @@
 // Social Reply generator: three distinct human-sounding replies for the given
 // platform + intent + tone.
 import { generateBlock as engineGenerate } from './engine';
-import { mockProvider } from './provider.mock';
 import { toRecord, type GeneratedRecord } from './shared';
 import type { GenerationProvider } from './types';
 import type {
@@ -21,7 +20,7 @@ export function generateSocialReplies(
   req: SocialRequest,
   brand: BrandSettings,
   recent: RecentByType,
-  provider: GenerationProvider = mockProvider,
+  provider: GenerationProvider,
 ): SocialOutput {
   const genReq: GenerationRequest = {
     platform: req.platform,

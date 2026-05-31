@@ -2,7 +2,6 @@
 // 3 captions, a short + long script, a YouTube title/description, a blog topic,
 // and a social post.
 import { generateBlock as engineGenerate } from './engine';
-import { mockProvider } from './provider.mock';
 import { substitute } from './tokens';
 import { generateScript } from './scriptGenerator';
 import { toRecord, type GeneratedRecord } from './shared';
@@ -31,7 +30,7 @@ export function repurposeContent(
   req: RepurposeRequest,
   brand: BrandSettings,
   recent: RecentByType,
-  provider: GenerationProvider = mockProvider,
+  provider: GenerationProvider,
 ): RepurposeOutput {
   const platform: Platform = req.platform ?? 'youtube_shorts';
   const genReq: GenerationRequest = { platform, notes: req.source };

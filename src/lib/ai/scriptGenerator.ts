@@ -1,7 +1,6 @@
 // Script Writer: a hook (via the engine) plus a beat-by-beat script, shot list,
 // on-screen text, and CTA filled from a length-appropriate skeleton.
 import { generateBlock as engineGenerate } from './engine';
-import { mockProvider } from './provider.mock';
 import { substitute } from './tokens';
 import { scoreOutput } from '../quality/score';
 import { maxSimilarity } from '../uniqueness/similarity';
@@ -36,7 +35,7 @@ export function generateScript(
   req: ScriptRequest,
   brand: BrandSettings,
   recent: RecentByType,
-  provider: GenerationProvider = mockProvider,
+  provider: GenerationProvider,
 ): ScriptOutput {
   const skeleton = pickSkeleton(req.lengthSeconds);
   const genReq = toGenReq(req);

@@ -11,3 +11,14 @@ export { generateScript, type ScriptOutput } from './scriptGenerator';
 export { generateReviewResponse, type ReviewOutput } from './reviewResponseGenerator';
 export { generateSocialReplies, type SocialOutput } from './socialReplyGenerator';
 export { repurposeContent, type RepurposeOutput } from './repurposeGenerator';
+
+// Cost tracking + high-level provider layer.
+export { estimateCost, approxTokens, type GenerationCost, type ProviderName } from './cost';
+export {
+  getActiveProvider,
+  setActiveProvider,
+  PROVIDERS,
+  mockContentProvider,
+  type ContentProvider,
+  type ProviderOutput,
+} from './providers';

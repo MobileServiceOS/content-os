@@ -43,3 +43,6 @@ export const socialRepliesCol = (businessId: string): CollectionReference =>
 
 export const generationHistoryCol = (businessId: string): CollectionReference =>
   collection(db, 'businesses', businessId, 'generationHistory');
+
+export const generationCostsCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'generationCosts');
