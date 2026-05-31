@@ -3,22 +3,21 @@
 // routes through the `generate` Cloud Function with the new kinds.
 import { gate } from '../gate';
 import { scoreOutput } from '../../quality/score';
-import { approxTokens, costFromTokens, type GenerationCost, type ProviderName } from '../cost';
+import { approxTokens, costFromTokens, type ProviderName } from '../cost';
 import { callGenerate, toBrandLite, type LlmProviderName } from '../functionsClient';
 import {
   GBP_DESCRIPTIONS, GBP_BANNED_CTAS, HASHTAG_BANK, AI_SEARCH_QUESTIONS, PHOTO_CATEGORIES, SEO_BODIES,
 } from './pools';
 import type { GbpRequest, GbpResult, SeoRequest, SeoResult, PhotoRequest, PhotoResult } from './types';
 import type { BrandSettings } from '../../../types/models';
-import type { QualityScore } from '../../../types/generation';
 
-export type { GbpRequest, GbpResult, SeoRequest, SeoResult, PhotoRequest, PhotoResult } from './types';
-
-export interface L3Output<T> {
-  result: T;
-  quality: QualityScore;
-  cost: GenerationCost;
-}
+export type { GbpRequest, GbpResult, SeoRequest, SeoResult, PhotoRequest, PhotoResult, L3Output } from './types';
+export type {
+  LeadRequest, LeadResult, MissedCallRequest, MissedCallResult,
+  ReviewTemplateRequest, ReviewTemplateResult, TaskGenRequest, TaskGenResult, GeneratedTask, LeadIntent,
+} from './types';
+export { runLead, runMissedCall, runReviewTemplates, runTasks } from './engage';
+import type { L3Output } from './types';
 
 const asStr = (v: unknown, d = ''): string => (typeof v === 'string' ? v : d);
 const asArr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);

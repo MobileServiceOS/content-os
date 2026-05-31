@@ -1,5 +1,68 @@
-// Template banks for the Level 3 kinds (GBP, Local SEO, photo).
-import type { SeoContentType } from '../../../types/level3';
+// Template banks for the Level 3 kinds (GBP, Local SEO, photo, engagement, tasks).
+import type { SeoContentType, TaskCategory, TaskPriority } from '../../../types/level3';
+
+export type LeadIntent = 'nurture' | 'quote' | 'missed_opportunity';
+
+export const LEAD_MESSAGES: Record<LeadIntent, string[]> = {
+  nurture: [
+    'Just keeping our info handy in case a tire ever gives you trouble in {city}. Save it for later.',
+    'No rush at all — whenever a tire acts up, we come to you across {area}.',
+    'Filing this away for you: mobile {service} that shows up where you are. Here if you need us.',
+  ],
+  quote: [
+    'Following up on your {service} quote — happy to lock in a time that works for you.',
+    'Wanted to check in on that quote. Any questions before we get you scheduled?',
+    'Still here to help with the {service}. Want me to hold a slot this week?',
+  ],
+  missed_opportunity: [
+    'Looks like we missed connecting — still want to get that {service} handled in {city}?',
+    'No worries if the timing was off. We can come to you whenever works.',
+    'Circling back in case you still need a hand with the tire. We are mobile across {area}.',
+  ],
+};
+
+export const MISSED_CALL_TEXTS: string[] = [
+  'Sorry we missed your call! This is {business}. Got a tire issue in {city}? Reply here and we will help fast.',
+  'Missed you just now — this is {business}. Tell us what is going on with the tire and we will get moving.',
+  'Hey, this is {business} returning your call. Where are you and what is the tire doing?',
+];
+export const MISSED_CALL_FOLLOWUPS: string[] = [
+  'Still need a hand with the tire? We can roll out to you.',
+  'Just checking back — want us to come take a look?',
+];
+export const MISSED_CALL_CALLBACKS: string[] = [
+  'Call back the missed tire lead within 30 minutes.',
+  'If no reply by text, try one more call this afternoon.',
+];
+
+export const REVIEW_REQUESTS: string[] = [
+  'Hope the tire is treating you well! A quick review would mean a lot and helps other {city} drivers find us.',
+  'If the {service} hit the mark, a short review goes a long way for a small local crew.',
+];
+export const REVIEW_FOLLOWUPS: string[] = [
+  'No pressure at all — if you get a minute, that review link is still open. Either way, drive safe out there.',
+  'Just a friendly nudge on that review whenever you are free. Appreciate you either way.',
+];
+
+export interface TaskTemplate { title: string; detail: string; priority: TaskPriority }
+export const TASK_TEMPLATES: Record<TaskCategory, TaskTemplate[]> = {
+  seo: [
+    { title: 'Publish a city page for {city}', detail: 'Use the SEO Studio (city page).', priority: 'medium' },
+    { title: 'Add an FAQ targeting AI-search questions', detail: 'Generate an FAQ in the SEO Studio.', priority: 'medium' },
+  ],
+  gbp: [
+    { title: 'Post a fresh GBP update', detail: 'Generate a compliant post in the GBP Studio.', priority: 'high' },
+    { title: 'Optimize 3 GBP photos', detail: 'Use the Photo optimizer on the Media page.', priority: 'low' },
+  ],
+  review: [
+    { title: 'Respond to new reviews', detail: 'Draft responses in the Review generator.', priority: 'high' },
+    { title: 'Send review requests to recent jobs', detail: 'Use the review request templates.', priority: 'medium' },
+  ],
+  content: [
+    { title: 'Distribute the latest job to all platforms', detail: 'Use New Job → Distribute.', priority: 'high' },
+    { title: 'Repurpose a top post', detail: 'Use the Repurpose engine.', priority: 'low' },
+  ],
+};
 
 // GBP descriptions — NEVER contain a CTA (compliance). Links live in separate fields.
 export const GBP_DESCRIPTIONS: string[] = [

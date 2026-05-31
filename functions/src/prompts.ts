@@ -22,6 +22,10 @@ const SCHEMAS: Record<GenKind, string> = {
   gbp: `{"description": string, "hashtags": string[4-6]}`,
   seo: `{"title": string, "body": string, "entities": string[], "questions": string[3-5]}`,
   photo: `{"filename": string, "altText": string, "description": string, "category": string}`,
+  lead: `{"messages": string[3]}`,
+  missed_call: `{"text": string, "followUp": string, "callbackReminder": string}`,
+  review_template: `{"request": string, "followUp": string}`,
+  task: `{"tasks": [{"category": "seo|gbp|review|content", "title": string, "detail": string, "priority": "low|medium|high"}]}`,
 };
 
 const KIND_BRIEF: Record<GenKind, string> = {
@@ -33,6 +37,10 @@ const KIND_BRIEF: Record<GenKind, string> = {
   gbp: 'Write a Google Business Profile description. CRITICAL: the description must NEVER contain a call-to-action (no "call now", "book now", "contact us", "schedule today", "text us"). Mention the service and city naturally. Then provide a rotating hashtag block.',
   seo: 'Write local SEO content of the requested type (service_page, city_page, faq, ai_search, or entity). Use natural language, real local + vehicle + tire entities, and answer questions people actually ask. No keyword stuffing, no repetitive city/service mentions.',
   photo: 'Write photo metadata for the subject: a kebab-case filename, descriptive alt text, a unique natural description, and a category.',
+  lead: 'Write three distinct, human lead follow-up messages for the given intent (nurture, quote, or missed opportunity). No pressure, no spam.',
+  missed_call: 'Write a missed-call text-back, a follow-up message, and a short internal callback reminder.',
+  review_template: 'Write a review request template and a gentle review follow-up template. Natural and low-pressure.',
+  task: 'Suggest a short list of marketing tasks for the business across SEO, GBP, review, and content, each with a category, title, detail, and priority.',
 };
 
 export function buildPrompt(

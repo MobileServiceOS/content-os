@@ -12,8 +12,8 @@ export { SocialAgent } from './SocialAgent';
 export { RepurposeAgent } from './RepurposeAgent';
 // Media agents (Phase 3 — wrap the image/video provider layer).
 export { ImageAgent, ThumbnailAgent, VideoAgent } from './media';
-// Level 3 agents (GBP / Local SEO / Photo).
-export { GBPAgent, LocalSeoAgent, PhotoAgent } from './level3';
+// Level 3 agents (GBP / Local SEO / Photo / Lead / Missed Call / Task).
+export { GBPAgent, LocalSeoAgent, PhotoAgent, LeadFollowUpAgent, MissedCallAgent, TaskAgent } from './level3';
 // Future-proof placeholders (interfaces defined; not implemented).
 export { ApprovalWorkflowAgent, PublishingAgent } from './workflow';
 export type { ApprovalRequest, ApprovalResult, PublishRequest, PublishResult } from './workflow';
@@ -25,7 +25,7 @@ import { SocialAgent } from './SocialAgent';
 import { RepurposeAgent } from './RepurposeAgent';
 import { BrandGuardianAgent } from './BrandGuardianAgent';
 import { ImageAgent, ThumbnailAgent, VideoAgent } from './media';
-import { GBPAgent, LocalSeoAgent, PhotoAgent } from './level3';
+import { GBPAgent, LocalSeoAgent, PhotoAgent, LeadFollowUpAgent, MissedCallAgent, TaskAgent } from './level3';
 import { getActiveProvider } from '../ai/providers';
 
 // Default registry routed through the active ContentProvider (the provider layer)
@@ -45,6 +45,9 @@ export const agents = {
   gbp: new GBPAgent(),
   localSeo: new LocalSeoAgent(),
   photo: new PhotoAgent(),
+  leadFollowUp: new LeadFollowUpAgent(),
+  missedCall: new MissedCallAgent(),
+  task: new TaskAgent(),
 } as const;
 
 export type AgentRegistry = typeof agents;

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { runGbp, runSeo, runPhoto } from './index';
+import { runGbp, runSeo, runPhoto, runLead, runMissedCall, runReviewTemplates, runTasks } from './index';
 import { GBP_BANNED_CTAS, PHOTO_CATEGORIES } from './pools';
+import { hasBannedOpener } from '../../uniqueness/bannedOpeners';
 import type { BrandSettings } from '../../../types/models';
 
 const brand: BrandSettings = {
@@ -39,5 +40,33 @@ describe('runPhoto (mock)', () => {
     expect(out.result.altText).toBeTruthy();
     expect(out.result.description).toBeTruthy();
     expect(PHOTO_CATEGORIES).toContain(out.result.category);
+  });
+});
+
+describe('engagement generators (mock)', () => {
+  it('runLead returns 3 distinct, non-banned-opener messages', async () => {
+    const out = await runLead(brand, 'b1', { intent: 'quote', service: 'flat tire repair', city: 'Miami' }, []);
+    expect(out.result.messages).toHaveLength(3);
+    expect(new Set(out.result.messages).size).toBe(3);
+    for (const m of out.result.messages) expect(hasBannedOpener(m)).toBe(false);
+  });
+
+  it('runMissedCall returns text + follow-up + callback reminder', async () => {
+    const out = await runMissedCall(brand, 'b1', { city: 'Miami', service: 'flat tire repair' }, []);
+    expect(out.result.text).toContain('Wheel Rush');
+    expect(out.result.followUp).toBeTruthy();
+    expect(out.result.callbackReminder).toBeTruthy();
+  });
+
+  it('runReviewTemplates returns a request + follow-up (no banned opener)', async () => {
+    const out = await runReviewTemplates(brand, 'b1', { service: 'flat tire repair', city: 'Miami' }, []);
+    expect(hasBannedOpener(out.result.request)).toBe(false);
+    expect(out.result.followUp).toBeTruthy();
+  });
+
+  it('runTasks (all) suggests tasks across categories', async () => {
+    const out = await runTasks(brand, 'b1', { focus: 'all', city: 'Miami' }, []);
+    expect(out.result.tasks.length).toBeGreaterThanOrEqual(4);
+    expect(new Set(out.result.tasks.map((t) => t.category)).size).toBeGreaterThanOrEqual(3);
   });
 });

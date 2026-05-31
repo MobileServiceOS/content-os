@@ -4,7 +4,10 @@
 import type { BrandSettings } from '../../types/models';
 import type { GenerationType } from '../../types/generation';
 
-export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose' | 'gbp' | 'seo' | 'photo';
+export type GenKind =
+  | 'content' | 'script' | 'review' | 'social' | 'repurpose'
+  | 'gbp' | 'seo' | 'photo'
+  | 'lead' | 'missed_call' | 'review_template' | 'task';
 export type LlmProviderName = 'claude' | 'openai' | 'gemini';
 
 export interface GenerateArgs {
