@@ -46,6 +46,8 @@ export interface BrandSettings {
   brandTone: string;
   /** Per-business uniqueness engine tuning. Falls back to DEFAULT_UNIQUENESS. */
   uniqueness?: UniquenessConfig;
+  /** Which generation provider this business uses. Defaults to 'mock'. */
+  provider?: 'mock' | 'claude' | 'openai' | 'gemini';
 }
 
 export interface ContentItem extends Audit {

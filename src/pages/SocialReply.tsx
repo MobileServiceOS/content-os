@@ -10,7 +10,7 @@ import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { useGenerationHistory } from '../hooks/useGenerationHistory';
 import { useSocialReplies } from '../hooks/useSocialReplies';
-import { getActiveProvider } from '../lib/ai/providers';
+import { providerFor } from '../lib/ai/providers';
 import { recordScores, type GeneratedRecord } from '../lib/ai/shared';
 import { buildRecent } from '../lib/uniqueness/recent';
 import { PLATFORM_LABELS, TONE_LABELS } from '../types/generation';
@@ -35,7 +35,7 @@ interface Generated {
 }
 
 export default function SocialReply() {
-  const { brand } = useBusiness();
+  const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
   const { save: saveReply } = useSocialReplies();
@@ -57,7 +57,7 @@ export default function SocialReply() {
     setError('');
     setSavedIdx(null);
     try {
-      const out = await getActiveProvider().generateSocialReply({ platform, message, tone, intent }, brand, recent);
+      const out = await providerFor(brand, businessId).generateSocialReply({ platform, message, tone, intent }, brand, recent);
       setGen(out);
       if (user) {
         await recordMany(user.uid, out.records);

@@ -11,7 +11,7 @@ import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { useGenerationHistory } from '../hooks/useGenerationHistory';
 import { useContentItems } from '../hooks/useContentItems';
-import { getActiveProvider } from '../lib/ai/providers';
+import { providerFor } from '../lib/ai/providers';
 import { recordScores, type GeneratedRecord } from '../lib/ai/shared';
 import { buildRecent } from '../lib/uniqueness/recent';
 import { PLATFORM_LABELS } from '../types/generation';
@@ -40,7 +40,7 @@ function packToText(r: RepurposeResult): string {
 }
 
 export default function Repurpose() {
-  const { brand } = useBusiness();
+  const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
   const { create } = useContentItems();
@@ -60,7 +60,7 @@ export default function Repurpose() {
     setError('');
     setSavedId(null);
     try {
-      const out = await getActiveProvider().repurposeContent({ source, platform }, brand, recent);
+      const out = await providerFor(brand, businessId).repurposeContent({ source, platform }, brand, recent);
       setGen(out);
       if (user) {
         await recordMany(user.uid, out.records);

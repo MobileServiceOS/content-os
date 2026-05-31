@@ -13,12 +13,13 @@ export { generateSocialReplies, type SocialOutput } from './socialReplyGenerator
 export { repurposeContent, type RepurposeOutput } from './repurposeGenerator';
 
 // Cost tracking + high-level provider layer.
-export { estimateCost, approxTokens, type GenerationCost, type ProviderName } from './cost';
+export { estimateCost, costFromTokens, approxTokens, type GenerationCost, type ProviderName } from './cost';
 export {
   getActiveProvider,
   setActiveProvider,
-  PROVIDERS,
+  providerFor,
   mockContentProvider,
+  makeClaudeProvider,
   type ContentProvider,
   type ProviderOutput,
 } from './providers';

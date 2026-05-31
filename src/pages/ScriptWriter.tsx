@@ -10,7 +10,7 @@ import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { useGenerationHistory } from '../hooks/useGenerationHistory';
 import { useContentItems } from '../hooks/useContentItems';
-import { getActiveProvider } from '../lib/ai/providers';
+import { providerFor } from '../lib/ai/providers';
 import { recordScores, type GeneratedRecord } from '../lib/ai/shared';
 import { buildRecent } from '../lib/uniqueness/recent';
 import { PLATFORM_LABELS, TONE_LABELS } from '../types/generation';
@@ -37,7 +37,7 @@ interface Generated {
 }
 
 export default function ScriptWriter() {
-  const { brand } = useBusiness();
+  const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
   const { create } = useContentItems();
@@ -62,7 +62,7 @@ export default function ScriptWriter() {
     setSavedId(null);
     try {
       const lengthSeconds = lengthChoice === 'custom' ? Number(customSeconds) || 30 : Number(lengthChoice);
-      const out = await getActiveProvider().generateScript(
+      const out = await providerFor(brand, businessId).generateScript(
         { topic, platform, tone, lengthSeconds, format },
         brand,
         recent,

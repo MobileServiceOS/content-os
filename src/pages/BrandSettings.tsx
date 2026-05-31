@@ -3,7 +3,7 @@
 // brandSettings/main and immediately affects generation (BusinessContext subscribes).
 import { useEffect, useState } from 'react';
 import PageHeader from '../components/PageHeader';
-import { TextField, TextArea } from '../components/ui/Field';
+import { TextField, TextArea, SelectField } from '../components/ui/Field';
 import { useBusiness } from '../context/BusinessContext';
 import { useBrandSettings } from '../hooks/useBrandSettings';
 import { can } from '../lib/permissions';
@@ -88,6 +88,25 @@ export default function BrandSettings() {
           <ArrayField label="Required phrases" value={draft.requiredPhrases} onChange={(v) => set({ requiredPhrases: v })} />
           <ArrayField label="Banned phrases" value={draft.bannedPhrases} onChange={(v) => set({ bannedPhrases: v })} />
         </div>
+      </div>
+
+      <div className="card stack" style={{ marginTop: 16 }}>
+        <h2 style={{ margin: 0 }}>Generation provider</h2>
+        <SelectField
+          label="Provider"
+          value={draft.provider ?? 'mock'}
+          onChange={(v) => set({ provider: v as Brand['provider'] })}
+          options={[
+            { value: 'mock', label: 'Template (no AI — default)' },
+            { value: 'claude', label: 'Claude (requires deployed function)' },
+            { value: 'openai', label: 'OpenAI (coming soon)' },
+            { value: 'gemini', label: 'Gemini (coming soon)' },
+          ]}
+        />
+        <p className="muted" style={{ margin: 0, fontSize: '0.72rem' }}>
+          Claude routes through the secure serverless function. OpenAI/Gemini are not implemented yet
+          and will throw until built. All providers run through the same uniqueness + brand checks.
+        </p>
       </div>
 
       <div className="card stack" style={{ marginTop: 16 }}>

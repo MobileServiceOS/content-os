@@ -35,3 +35,19 @@ export function estimateCost(
   const estimatedCostUsd = (tokens / 1000) * RATE_PER_1K[provider];
   return { provider, tokens, estimatedCostUsd, generationTimeMs, regenerationCount };
 }
+
+/** Cost from real token usage (used by LLM providers reporting actual tokens). */
+export function costFromTokens(
+  provider: ProviderName,
+  tokens: number,
+  generationTimeMs: number,
+  regenerationCount: number,
+): GenerationCost {
+  return {
+    provider,
+    tokens,
+    estimatedCostUsd: (tokens / 1000) * RATE_PER_1K[provider],
+    generationTimeMs,
+    regenerationCount,
+  };
+}

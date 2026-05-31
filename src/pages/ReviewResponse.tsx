@@ -11,7 +11,7 @@ import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { useGenerationHistory } from '../hooks/useGenerationHistory';
 import { useReviewResponses } from '../hooks/useReviewResponses';
-import { getActiveProvider } from '../lib/ai/providers';
+import { providerFor } from '../lib/ai/providers';
 import { recordScores, type GeneratedRecord } from '../lib/ai/shared';
 import { buildRecent } from '../lib/uniqueness/recent';
 import { TONE_LABELS } from '../types/generation';
@@ -28,7 +28,7 @@ interface Generated {
 }
 
 export default function ReviewResponse() {
-  const { brand } = useBusiness();
+  const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
   const { save: saveResponse } = useReviewResponses();
@@ -51,7 +51,7 @@ export default function ReviewResponse() {
     setError('');
     setSavedStyle(null);
     try {
-      const out = await getActiveProvider().generateReviewResponse(
+      const out = await providerFor(brand, businessId).generateReviewResponse(
         { reviewText, rating: Number(rating), city, service, tone },
         brand,
         recent,

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getActiveProvider, mockContentProvider } from './index';
-import { claudeContentProvider } from './claudeProvider';
+import { getActiveProvider, mockContentProvider, providerFor } from './index';
 import { openaiContentProvider } from './openaiProvider';
 import { geminiContentProvider } from './geminiProvider';
 import type { ContentProvider } from './types';
@@ -49,10 +48,16 @@ describe('provider layer', () => {
     expect(repurpose.result.hooks).toHaveLength(5);
   });
 
-  it('future providers throw NotConfiguredError', async () => {
-    const futures: ContentProvider[] = [claudeContentProvider, openaiContentProvider, geminiContentProvider];
+  it('unimplemented providers throw NotConfiguredError', async () => {
+    const futures: ContentProvider[] = [openaiContentProvider, geminiContentProvider];
     for (const p of futures) {
       await expect(p.generateContent({ platform: 'instagram' }, brand, recent())).rejects.toBeInstanceOf(NotConfiguredError);
     }
+  });
+
+  it('providerFor resolves mock by default and claude when selected', () => {
+    expect(providerFor(brand, 'b1').name).toBe('mock');
+    expect(providerFor({ ...brand, provider: 'claude' }, 'b1').name).toBe('claude');
+    expect(providerFor({ ...brand, provider: 'openai' }, 'b1').name).toBe('openai');
   });
 });

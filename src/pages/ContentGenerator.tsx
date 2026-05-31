@@ -12,7 +12,7 @@ import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { useGenerationHistory } from '../hooks/useGenerationHistory';
 import { useContentItems } from '../hooks/useContentItems';
-import { getActiveProvider } from '../lib/ai/providers';
+import { providerFor } from '../lib/ai/providers';
 import { PLATFORM_LABELS } from '../types/generation';
 import type {
   GenerationRequest,
@@ -42,7 +42,7 @@ interface Generated {
 }
 
 export default function ContentGenerator() {
-  const { brand } = useBusiness();
+  const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
   const { create } = useContentItems();
@@ -77,7 +77,7 @@ export default function ContentGenerator() {
     setError('');
     setSavedId(null);
     try {
-      const out = await getActiveProvider().generateContent(form, brand, recent);
+      const out = await providerFor(brand, businessId).generateContent(form, brand, recent);
       setGen({ result: out.result, records: out.records, cost: out.cost });
       if (user) {
         await recordMany(user.uid, out.records);
