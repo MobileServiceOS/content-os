@@ -1,97 +1,196 @@
-// Dashboard: content counts, recent content, and quick actions.
-import { useEffect, useState } from 'react';
+// Command Center — the Level 3 dashboard. Aggregates agents, content, reputation,
+// GBP, local SEO, tasks, the approval queue, and the agent activity feed.
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { onSnapshot } from 'firebase/firestore';
 import PageHeader from '../components/PageHeader';
-import StatusBadge from '../components/ui/StatusBadge';
 import RoleGate from '../components/RoleGate';
 import { useBusiness } from '../context/BusinessContext';
 import { useContentItems } from '../hooks/useContentItems';
-import { reviewResponsesCol } from '../lib/firebase/paths';
+import { useGbpPosts } from '../hooks/useGbpPosts';
+import { useSeoContent } from '../hooks/useSeoContent';
+import { useTasks } from '../hooks/useTasks';
+import { useAgentLogs } from '../hooks/useAgentLogs';
+import { useMediaItems } from '../hooks/useMediaItems';
+import { reviewResponsesCol, socialRepliesCol } from '../lib/firebase/paths';
+import { agents } from '../lib/agents';
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="card">
-      <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>{value}</div>
-      <div className="muted" style={{ fontSize: '0.82rem' }}>{label}</div>
+      <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{value}</div>
+      <div className="muted" style={{ fontSize: '0.78rem' }}>{label}</div>
     </div>
   );
 }
 
-const QUICK_ACTIONS = [
-  { to: '/generator', label: 'New Caption' },
-  { to: '/script', label: 'New Script' },
-  { to: '/review', label: 'Review Response' },
-  { to: '/social', label: 'Social Reply' },
-  { to: '/repurpose', label: 'Repurpose Content' },
+function Section({ title, children, to, cta }: { title: string; children: ReactNode; to?: string; cta?: string }) {
+  return (
+    <div className="card stack" style={{ marginTop: 16 }}>
+      <div className="row between">
+        <h2 style={{ margin: 0 }}>{title}</h2>
+        {to && <Link className="btn btn-sm" to={to}>{cta ?? 'Open'}</Link>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+const ago = (ms: number): string => {
+  const min = Math.round((Date.now() - ms) / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min}m ago`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.round(h / 24)}d ago`;
+};
+
+const QUICK = [
+  { to: '/new-job', label: 'New Job' },
+  { to: '/generator', label: 'Caption' },
+  { to: '/gbp', label: 'GBP' },
+  { to: '/seo', label: 'SEO' },
+  { to: '/engagement', label: 'Engage' },
 ];
 
 export default function Dashboard() {
-  const { businessId, brand } = useBusiness();
-  const { items } = useContentItems();
+  const { brand, businessId } = useBusiness();
+  const { items: content } = useContentItems();
+  const { posts: gbp } = useGbpPosts();
+  const { items: seo } = useSeoContent();
+  const { tasks } = useTasks();
+  const { logs } = useAgentLogs(15);
+  const { items: media } = useMediaItems();
   const [reviewCount, setReviewCount] = useState(0);
+  const [socialCount, setSocialCount] = useState(0);
 
   useEffect(() => {
     if (!businessId) return;
-    return onSnapshot(reviewResponsesCol(businessId), (snap) => setReviewCount(snap.size));
+    const a = onSnapshot(reviewResponsesCol(businessId), (s) => setReviewCount(s.size));
+    const b = onSnapshot(socialRepliesCol(businessId), (s) => setSocialCount(s.size));
+    return () => { a(); b(); };
   }, [businessId]);
 
-  const active = items.filter((i) => !i.archived);
-  const drafts = active.filter((i) => i.status === 'draft').length;
-  const approved = active.filter((i) => i.status === 'approved').length;
-  const scheduled = active.filter((i) => i.status === 'scheduled').length;
-  const recent = active.slice(0, 5);
+  const active = useMemo(() => content.filter((i) => !i.archived), [content]);
+  const m = useMemo(() => {
+    const pendingContent = active.filter((i) => i.approvalState === 'pending_approval').length;
+    const pendingGbp = gbp.filter((p) => p.approvalState === 'pending_approval').length;
+    const pendingSeo = seo.filter((x) => x.approvalState === 'pending_approval').length;
+    const cities = new Set<string>([...seo.map((x) => x.city ?? ''), ...active.map((x) => x.city)].filter(Boolean));
+    const services = new Set<string>([...seo.map((x) => x.service ?? ''), ...active.map((x) => x.service)].filter(Boolean));
+    return {
+      drafts: active.filter((i) => i.status === 'draft').length,
+      approved: active.filter((i) => i.status === 'approved').length,
+      scheduled: active.filter((i) => i.status === 'scheduled').length,
+      posted: active.filter((i) => i.status === 'posted').length,
+      pendingContent, pendingGbp, pendingSeo,
+      pendingApprovals: pendingContent + pendingGbp + pendingSeo,
+      tasksPending: tasks.filter((t) => t.status === 'pending').length,
+      tasksDone: tasks.filter((t) => t.status === 'done').length,
+      tasksAgent: tasks.filter((t) => t.createdByAgent).length,
+      tasksHigh: tasks.filter((t) => t.status === 'pending' && t.priority === 'high').length,
+      gbpTasks: tasks.filter((t) => t.status === 'pending' && t.category === 'gbp').length,
+      faqs: seo.filter((x) => x.type === 'faq').length,
+      cityCov: `${cities.size}/${brand?.serviceAreas.length ?? 0}`,
+      serviceCov: `${services.size}/${brand?.services.length ?? 0}`,
+    };
+  }, [active, gbp, seo, tasks, brand]);
 
   return (
     <>
       <PageHeader
-        title={brand?.businessName ? `${brand.businessName}` : 'Dashboard'}
-        subtitle="Your content workspace at a glance"
+        title={brand?.businessName ?? 'Command Center'}
+        subtitle="Your business agents at a glance"
+        actions={<RoleGate action="content.create"><Link className="btn btn-primary btn-sm" to="/new-job">+ New Job</Link></RoleGate>}
       />
 
-      <div className="grid grid-3">
-        <Stat label="Drafts" value={drafts} />
-        <Stat label="Approved" value={approved} />
-        <Stat label="Scheduled" value={scheduled} />
-        <Stat label="Review responses" value={reviewCount} />
-      </div>
-
       <RoleGate action="content.create">
-        <div className="card stack" style={{ marginTop: 16 }}>
-          <h2 style={{ margin: 0 }}>Quick actions</h2>
-          <div className="row">
-            {QUICK_ACTIONS.map((a) => (
-              <Link key={a.to} className="btn" to={a.to}>
-                {a.label}
-              </Link>
-            ))}
-          </div>
+        <div className="row" style={{ marginBottom: 4 }}>
+          {QUICK.map((q) => <Link key={q.to} className="btn btn-sm" to={q.to}>{q.label}</Link>)}
         </div>
       </RoleGate>
 
-      <div className="card stack" style={{ marginTop: 16 }}>
-        <div className="row between">
-          <h2 style={{ margin: 0 }}>Recent content</h2>
-          <Link className="btn btn-sm" to="/library">View library</Link>
+      <Section title="Agent overview">
+        <div className="grid grid-3">
+          <Stat label="Agents active" value={Object.keys(agents).length} />
+          <Stat label="Tasks completed" value={m.tasksDone} />
+          <Stat label="Pending approvals" value={m.pendingApprovals} />
+          <Stat label="Content items" value={active.length} />
+          <Stat label="Review responses" value={reviewCount} />
+          <Stat label="Social replies" value={socialCount} />
         </div>
-        {recent.length === 0 ? (
-          <p className="muted">No content yet. Generate something to get started.</p>
+      </Section>
+
+      <Section title="Content" to="/library" cta="Library">
+        <div className="grid grid-2">
+          <Stat label="Draft" value={m.drafts} />
+          <Stat label="Approved" value={m.approved} />
+          <Stat label="Scheduled" value={m.scheduled} />
+          <Stat label="Posted" value={m.posted} />
+        </div>
+      </Section>
+
+      <Section title="Reputation" to="/review" cta="Review">
+        <div className="grid grid-3">
+          <Stat label="Review responses" value={reviewCount} />
+          <Stat label="Social replies" value={socialCount} />
+          <Stat label="Approved content" value={m.approved} />
+        </div>
+        <p className="muted" style={{ margin: 0, fontSize: '0.72rem' }}>Live review ingest arrives with the GBP API (Phase 5).</p>
+      </Section>
+
+      <Section title="GBP" to="/gbp" cta="GBP Studio">
+        <div className="grid grid-2">
+          <Stat label="GBP posts" value={gbp.length} />
+          <Stat label="Pending GBP" value={m.pendingGbp} />
+          <Stat label="Media assets" value={media.length} />
+          <Stat label="GBP tasks" value={m.gbpTasks} />
+        </div>
+      </Section>
+
+      <Section title="Local SEO" to="/seo" cta="SEO Studio">
+        <div className="grid grid-2">
+          <Stat label="SEO content" value={seo.length} />
+          <Stat label="FAQ pieces" value={m.faqs} />
+          <Stat label="City coverage" value={m.cityCov} />
+          <Stat label="Service coverage" value={m.serviceCov} />
+        </div>
+      </Section>
+
+      <Section title="Tasks" to="/tasks" cta="Tasks">
+        <div className="grid grid-2">
+          <Stat label="Pending" value={m.tasksPending} />
+          <Stat label="Agent-created" value={m.tasksAgent} />
+          <Stat label="Completed" value={m.tasksDone} />
+          <Stat label="High priority" value={m.tasksHigh} />
+        </div>
+      </Section>
+
+      <Section title="Approval queue" to="/approvals" cta="Open queue">
+        <div className="grid grid-3">
+          <Stat label="Content" value={m.pendingContent} />
+          <Stat label="GBP" value={m.pendingGbp} />
+          <Stat label="SEO" value={m.pendingSeo} />
+        </div>
+      </Section>
+
+      <Section title="Agent activity feed">
+        {logs.length === 0 ? (
+          <p className="muted">No agent activity yet. Generate something to see it here.</p>
         ) : (
-          <div className="stack">
-            {recent.map((i) => (
-              <div key={i.id} className="row between">
+          <div className="stack" style={{ gap: 6 }}>
+            {logs.map((l) => (
+              <div key={l.id} className="row between">
                 <div>
-                  <div>{i.title}</div>
-                  <div className="muted" style={{ fontSize: '0.78rem' }}>
-                    {i.platform}{i.city ? ` · ${i.city}` : ''}
-                  </div>
+                  <span className="tag" style={{ marginRight: 6 }}>{l.agent}</span>
+                  <span style={{ fontSize: '0.9rem' }}>{l.summary}</span>
                 </div>
-                <StatusBadge status={i.status} />
+                <span className="muted" style={{ fontSize: '0.74rem' }}>{ago(l.createdAt)}</span>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Section>
     </>
   );
 }
