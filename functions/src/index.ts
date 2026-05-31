@@ -25,8 +25,11 @@ const PROVIDERS: LlmProvider[] = ['claude', 'openai', 'gemini'];
 
 type Caller = (key: string, prompt: { system: string; user: string }) => Promise<{ json: unknown; usage: Usage }>;
 
+// Bind only the provider secrets that are configured (exist in Secret Manager).
+// Claude-first deploy: add OPENAI_API_KEY / GEMINI_API_KEY here once those secrets
+// are set (`firebase functions:secrets:set ...`) and redeploy.
 export const generate = onCall(
-  { secrets: [ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY] },
+  { secrets: [ANTHROPIC_API_KEY] },
   async (request) => {
     const data = request.data as GenerateData;
     if (!data?.businessId || !KINDS.includes(data.kind) || !data.brand) {
@@ -58,7 +61,8 @@ interface ImageData {
   style?: string;
 }
 
-export const generateImage = onCall({ secrets: [OPENAI_API_KEY] }, async (request) => {
+// OpenAI image generation: bind OPENAI_API_KEY here once that secret is set.
+export const generateImage = onCall({ secrets: [] }, async (request) => {
   const data = request.data as ImageData;
   if (!data?.businessId || !data?.prompt) {
     throw new HttpsError('invalid-argument', 'businessId and prompt are required.');
