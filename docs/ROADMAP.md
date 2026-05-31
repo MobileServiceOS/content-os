@@ -11,14 +11,16 @@ framework, and uniqueness/quality engine are already in place.
 Swap template generation for real models behind the existing `ContentProvider`
 interface. The uniqueness engine, BrandGuardian, and quality scoring stay unchanged.
 
-- **Real Claude API integration** (`claudeProvider`)
-- **OpenAI integration** (`openaiProvider`)
-- **Gemini integration** (`geminiProvider`)
-- **Provider switching** — per-business provider selection + `setActiveProvider`,
-  with real token usage feeding the existing cost-tracking model.
+- **Real Claude API integration** — ✅ shipped. A Firebase Cloud Function holds the
+  Anthropic key and calls Claude; `ClaudeContentProvider` runs each candidate
+  through the same banned-opener + similarity gate and regenerates on collision.
+- **Provider switching** — ✅ shipped. Per-business `brand.provider` +
+  `providerFor(brand, businessId)`; real token usage feeds the cost-tracking model.
+- **OpenAI integration** (`openaiProvider`) — stubbed; throws `NotConfiguredError`.
+- **Gemini integration** (`geminiProvider`) — stubbed; throws `NotConfiguredError`.
 
-> The LLM API key must never ship to the browser — providers call a serverless
-> function (the one piece of backend Phase 1 deliberately deferred).
+> The LLM API key never ships to the browser — providers call the serverless
+> function (`functions/`, see [../functions/README.md](../functions/README.md)).
 
 ## Phase 3 — Visual content
 
