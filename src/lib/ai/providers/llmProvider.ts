@@ -31,14 +31,14 @@ const asStr = (v: unknown, d = ''): string => (typeof v === 'string' ? v : d);
 const asArr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
 
 function avgQuality(scores: QualityScore[]): QualityScore {
-  if (!scores.length) return { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, overall: 0 };
+  if (!scores.length) return { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, aiSearch: 0, overall: 0 };
   const acc = scores.reduce((a, s) => ({
     uniqueness: a.uniqueness + s.uniqueness, readability: a.readability + s.readability,
     brandAlignment: a.brandAlignment + s.brandAlignment, engagement: a.engagement + s.engagement,
-    localRelevance: a.localRelevance + s.localRelevance, overall: a.overall + s.overall,
-  }), { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, overall: 0 });
+    localRelevance: a.localRelevance + s.localRelevance, aiSearch: a.aiSearch + s.aiSearch, overall: a.overall + s.overall,
+  }), { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, aiSearch: 0, overall: 0 });
   const n = scores.length;
-  return { uniqueness: acc.uniqueness / n, readability: acc.readability / n, brandAlignment: acc.brandAlignment / n, engagement: acc.engagement / n, localRelevance: acc.localRelevance / n, overall: acc.overall / n };
+  return { uniqueness: acc.uniqueness / n, readability: acc.readability / n, brandAlignment: acc.brandAlignment / n, engagement: acc.engagement / n, localRelevance: acc.localRelevance / n, aiSearch: acc.aiSearch / n, overall: acc.overall / n };
 }
 
 export class LlmContentProvider implements ContentProvider {
@@ -54,6 +54,7 @@ export class LlmContentProvider implements ContentProvider {
       type, generatorType: this.name, structureId: this.name, text,
       uniquenessScore: q.uniqueness, brandScore: q.brandAlignment,
       readabilityScore: q.readability, engagementScore: q.engagement, localRelevanceScore: q.localRelevance,
+      aiSearchScore: q.aiSearch,
       similarityScore: maxSimilarity(text, recent), regenerationCount: regen,
     };
   }
@@ -94,7 +95,7 @@ export class LlmContentProvider implements ContentProvider {
       const hook: GeneratedBlock = { type: 'hook', structureId: this.name, text: asStr(o.hook) };
       const caption: GeneratedBlock = { type: 'caption', structureId: this.name, text: asStr(o.caption) };
       const cta: GeneratedBlock = { type: 'cta', structureId: this.name, text: asStr(o.cta) };
-      return { primary: caption.text, result: { hook, caption, cta, onScreenText: asArr(o.onScreenText), hashtags: asArr(o.hashtags), localKeywords: asArr(o.localKeywords), blocks: [hook, caption, cta], quality: { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, overall: 0 } } };
+      return { primary: caption.text, result: { hook, caption, cta, onScreenText: asArr(o.onScreenText), hashtags: asArr(o.hashtags), localKeywords: asArr(o.localKeywords), blocks: [hook, caption, cta], quality: { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, aiSearch: 0, overall: 0 } } };
     });
     const records = [
       this.record('hook', result.hook!.text, recent.hook ?? [], brand, regen),

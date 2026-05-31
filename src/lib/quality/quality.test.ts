@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { scoreBrandAlignment, scoreLocalRelevance, brandChecks } from './brand';
-import { scoreReadability, scoreEngagement, scoreOutput } from './score';
+import { scoreReadability, scoreEngagement, scoreOutput, scoreAiSearch } from './score';
 import type { BrandSettings } from '../../types/models';
 
 const brand: BrandSettings = {
@@ -60,7 +60,21 @@ describe('readability + engagement', () => {
   });
 });
 
-describe('scoreOutput (5 dimensions)', () => {
+describe('AI-search friendliness', () => {
+  it('rewards question framing + specifics over flat keyword text', () => {
+    const answerLike = scoreAiSearch('Who can replace a tire at my house? A mobile tech arrives in 25 minutes.');
+    const flat = scoreAiSearch('tire tire tire service service service area area');
+    expect(answerLike).toBeGreaterThan(flat);
+  });
+
+  it('scoreOutput includes a 0..1 aiSearch dimension', () => {
+    const q = scoreOutput('How long does mobile tire replacement take? About 30 minutes.', [], brand);
+    expect(q.aiSearch).toBeGreaterThan(0);
+    expect(q.aiSearch).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('scoreOutput (6 dimensions)', () => {
   it('reflects uniqueness against recent outputs', () => {
     const text = 'We come to you for a fast mobile tire repair in Miami-Dade.';
     const fresh = scoreOutput(text, ['totally different content about spreadsheets'], brand);

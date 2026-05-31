@@ -51,6 +51,7 @@ export interface QualityScore {
   brandAlignment: number; // 0..1
   engagement: number; // 0..1
   localRelevance: number; // 0..1
+  aiSearch: number; // 0..1 — AI-search / answer-engine friendliness
   overall: number; // 0..1
 }
 

@@ -64,10 +64,14 @@ export class BrandGuardianAgent extends BaseAgent<GuardianInput, GuardianReport>
     if (duplicateStructure) notes.push('Duplicate structure vs recent output');
     else if (repetitive) notes.push('Similar to recent output');
 
+    // Spam risk: stuffing or near-duplicate structure.
+    const spamRisk = checks.keywordStuffing || maxSim >= 0.75;
+    if (spamRisk) notes.push('Spam risk');
+
     const passed =
       bannedOpeners.length === 0 &&
       checks.bannedPhrasesHit.length === 0 &&
-      !checks.keywordStuffing &&
+      !spamRisk &&
       q.uniqueness >= UNIQUENESS_THRESHOLD;
 
     return {
@@ -77,11 +81,13 @@ export class BrandGuardianAgent extends BaseAgent<GuardianInput, GuardianReport>
       engagement: q.engagement,
       brandAlignment: q.brandAlignment,
       localRelevance: q.localRelevance,
+      aiSearch: q.aiSearch,
       bannedPhrases: checks.bannedPhrasesHit,
       bannedOpeners,
       keywordStuffing: checks.keywordStuffing,
       duplicateStructure,
       repetitive,
+      spamRisk,
       notes,
     };
   }

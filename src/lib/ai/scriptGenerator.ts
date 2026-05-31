@@ -71,6 +71,7 @@ export function generateScript(
     readabilityScore: bodyQuality.readability,
     engagementScore: bodyQuality.engagement,
     localRelevanceScore: bodyQuality.localRelevance,
+    aiSearchScore: bodyQuality.aiSearch,
     similarityScore: maxSimilarity(script, recent.script ?? []),
     regenerationCount: 0,
   };

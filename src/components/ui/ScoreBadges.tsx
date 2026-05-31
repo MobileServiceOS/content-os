@@ -1,10 +1,11 @@
-// Compact 0..100 score chips for the five quality dimensions.
+// Compact 0..100 score chips for the six quality dimensions.
 interface Scores {
   uniqueness: number;
   readability: number;
   engagement: number;
   brandAlignment: number;
   localRelevance: number;
+  aiSearch: number;
 }
 
 const DIMS: { key: keyof Scores; label: string }[] = [
@@ -13,6 +14,7 @@ const DIMS: { key: keyof Scores; label: string }[] = [
   { key: 'engagement', label: 'Engage' },
   { key: 'brandAlignment', label: 'Brand' },
   { key: 'localRelevance', label: 'Local' },
+  { key: 'aiSearch', label: 'AI' },
 ];
 
 function color(v: number): string {

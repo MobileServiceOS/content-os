@@ -28,12 +28,14 @@ export interface GuardianReport {
   engagement: number;
   brandAlignment: number;
   localRelevance: number;
+  aiSearch: number;
   // Findings.
   bannedPhrases: string[];
   bannedOpeners: string[];
   keywordStuffing: boolean;
   duplicateStructure: boolean;
   repetitive: boolean;
+  spamRisk: boolean;
   notes: string[];
 }
 

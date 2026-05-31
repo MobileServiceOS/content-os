@@ -32,6 +32,29 @@ export function scoreEngagement(text: string): number {
   return Math.max(0, Math.min(1, score));
 }
 
+const QUESTION_WORDS = ['how', 'who', 'what', 'where', 'when', 'why', 'can', 'does', 'is'];
+
+/** Higher when the text reads like a natural answer to a real question: a
+ * question framing, entity/number specifics, and natural (non-stuffed) language. */
+export function scoreAiSearch(text: string): number {
+  const n = text.toLowerCase();
+  const words = tokenize(text);
+  let score = 0.3;
+  if (/\?/.test(text)) score += 0.2;
+  if (QUESTION_WORDS.some((w) => new RegExp(`\\b${w}\\b`).test(n))) score += 0.2;
+  if (/\d/.test(text)) score += 0.1; // concrete specifics (times, sizes)
+  const sentences = text.split(/[.!?]+/).map((s) => s.trim()).filter(Boolean);
+  if (sentences.length >= 2) score += 0.1; // some substance to answer with
+  // Penalize obvious keyword stuffing (a single content word dominating).
+  if (words.length >= 8) {
+    const counts = new Map<string, number>();
+    for (const w of words) if (w.length > 3) counts.set(w, (counts.get(w) ?? 0) + 1);
+    const max = counts.size ? Math.max(...counts.values()) : 0;
+    if (max / words.length > 0.18) score -= 0.2;
+  }
+  return Math.max(0, Math.min(1, score));
+}
+
 export function scoreOutput(
   text: string,
   recent: string[],
@@ -42,11 +65,13 @@ export function scoreOutput(
   const engagement = scoreEngagement(text);
   const brandAlignment = scoreBrandAlignment(text, brand);
   const localRelevance = scoreLocalRelevance(text, brand);
+  const aiSearch = scoreAiSearch(text);
   const overall =
-    0.3 * uniqueness +
-    0.25 * brandAlignment +
-    0.2 * engagement +
-    0.15 * readability +
-    0.1 * localRelevance;
-  return { uniqueness, readability, engagement, brandAlignment, localRelevance, overall };
+    0.25 * uniqueness +
+    0.2 * brandAlignment +
+    0.15 * engagement +
+    0.12 * readability +
+    0.13 * localRelevance +
+    0.15 * aiSearch;
+  return { uniqueness, readability, engagement, brandAlignment, localRelevance, aiSearch, overall };
 }

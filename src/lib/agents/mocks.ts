@@ -23,6 +23,7 @@ const FULL: QualityScore = {
   brandAlignment: 1,
   engagement: 1,
   localRelevance: 1,
+  aiSearch: 1,
   overall: 1,
 };
 

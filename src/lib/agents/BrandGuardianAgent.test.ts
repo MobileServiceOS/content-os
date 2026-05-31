@@ -54,6 +54,14 @@ describe('BrandGuardianAgent', () => {
   it('flags keyword stuffing', () => {
     expect(g.detectKeywordStuffing('tire tire tire tire tire tire tire tire tire repair')).toBe(true);
   });
+
+  it('reports spamRisk + an aiSearch score', () => {
+    const spammy = g.review('tire tire tire tire tire tire tire tire tire repair', ctx);
+    expect(spammy.spamRisk).toBe(true);
+    expect(spammy.passed).toBe(false);
+    const clean = g.review('How fast can you reach Miami-Dade? Usually within 25 minutes.', ctx);
+    expect(clean.aiSearch).toBeGreaterThan(0);
+  });
 });
 
 describe('agent registry (Stage A mocks)', () => {

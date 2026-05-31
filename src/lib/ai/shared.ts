@@ -15,6 +15,7 @@ export interface GeneratedRecord {
   readabilityScore: number;
   engagementScore: number;
   localRelevanceScore: number;
+  aiSearchScore: number;
   similarityScore: number;
   regenerationCount: number;
 }
@@ -31,6 +32,7 @@ export function toRecord(generatorType: string, er: EngineResult): GeneratedReco
     readabilityScore: er.quality.readability,
     engagementScore: er.quality.engagement,
     localRelevanceScore: er.quality.localRelevance,
+    aiSearchScore: er.quality.aiSearch,
     similarityScore: er.similarityScore,
     regenerationCount: er.regenerationCount,
   };
@@ -44,12 +46,13 @@ export function recordScores(r: GeneratedRecord) {
     engagement: r.engagementScore,
     brandAlignment: r.brandScore,
     localRelevance: r.localRelevanceScore,
+    aiSearch: r.aiSearchScore,
   };
 }
 
 export function aggregateQuality(results: EngineResult[]): QualityScore {
   if (results.length === 0) {
-    return { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, overall: 0 };
+    return { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, aiSearch: 0, overall: 0 };
   }
   const sum = results.reduce(
     (acc, r) => ({
@@ -58,9 +61,10 @@ export function aggregateQuality(results: EngineResult[]): QualityScore {
       brandAlignment: acc.brandAlignment + r.quality.brandAlignment,
       engagement: acc.engagement + r.quality.engagement,
       localRelevance: acc.localRelevance + r.quality.localRelevance,
+      aiSearch: acc.aiSearch + r.quality.aiSearch,
       overall: acc.overall + r.quality.overall,
     }),
-    { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, overall: 0 },
+    { uniqueness: 0, readability: 0, brandAlignment: 0, engagement: 0, localRelevance: 0, aiSearch: 0, overall: 0 },
   );
   const n = results.length;
   return {
@@ -69,6 +73,7 @@ export function aggregateQuality(results: EngineResult[]): QualityScore {
     brandAlignment: sum.brandAlignment / n,
     engagement: sum.engagement / n,
     localRelevance: sum.localRelevance / n,
+    aiSearch: sum.aiSearch / n,
     overall: sum.overall / n,
   };
 }
