@@ -112,6 +112,47 @@ service cloud.firestore {
         allow delete: if hasRole(bid, ['owner'])
           || (hasRole(bid, ['manager']) && resource.data.createdBy == request.auth.uid);
       }
+
+      // --- Level 3 collections ---
+
+      // Master content assets (single-source job records).
+      match /contentAssets/{id} {
+        allow read: if isMember(bid);
+        allow create, update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow delete: if hasRole(bid, ['owner'])
+          || (hasRole(bid, ['manager']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      // GBP posts and SEO content carry approvalState — only owners may approve.
+      match /gbpPosts/{id} {
+        allow read: if isMember(bid);
+        allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid)
+          && (request.resource.data.approvalState != 'approved' || hasRole(bid, ['owner']));
+        allow delete: if hasRole(bid, ['owner']);
+      }
+
+      match /seoContent/{id} {
+        allow read: if isMember(bid);
+        allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid)
+          && (request.resource.data.approvalState != 'approved' || hasRole(bid, ['owner']));
+        allow delete: if hasRole(bid, ['owner']);
+      }
+
+      // Agent-created tasks.
+      match /tasks/{id} {
+        allow read: if isMember(bid);
+        allow create, update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow delete: if hasRole(bid, ['owner', 'manager']);
+      }
+
+      // Agent activity log — append-only.
+      match /agentLogs/{id} {
+        allow read: if isMember(bid);
+        allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow update, delete: if false;
+      }
     }
 
     // Default deny everything else.

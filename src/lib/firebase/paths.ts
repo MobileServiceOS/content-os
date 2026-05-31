@@ -56,3 +56,27 @@ export const mediaItemDoc = (businessId: string, id: string): DocumentReference 
 /** Storage path for a tenant's media asset. */
 export const mediaStoragePath = (businessId: string, fileName: string): string =>
   `businesses/${businessId}/media/${fileName}`;
+
+// --- Level 3 collections ---
+export const contentAssetsCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'contentAssets');
+export const contentAssetDoc = (businessId: string, id: string): DocumentReference =>
+  doc(db, 'businesses', businessId, 'contentAssets', id);
+
+export const gbpPostsCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'gbpPosts');
+export const gbpPostDoc = (businessId: string, id: string): DocumentReference =>
+  doc(db, 'businesses', businessId, 'gbpPosts', id);
+
+export const seoContentCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'seoContent');
+export const seoContentDoc = (businessId: string, id: string): DocumentReference =>
+  doc(db, 'businesses', businessId, 'seoContent', id);
+
+export const tasksCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'tasks');
+export const taskDoc = (businessId: string, id: string): DocumentReference =>
+  doc(db, 'businesses', businessId, 'tasks', id);
+
+export const agentLogsCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'agentLogs');

@@ -2,6 +2,8 @@
 
 export type Role = 'owner' | 'manager' | 'viewer';
 export type ContentStatus = 'draft' | 'approved' | 'scheduled' | 'posted';
+/** Approval workflow state (Level 3). Separate from ContentStatus. */
+export type ApprovalState = 'none' | 'pending_approval' | 'approved' | 'rejected';
 
 /** Audit fields stamped on every tenant-scoped document. */
 export interface Audit {
@@ -44,6 +46,8 @@ export interface BrandSettings {
   bannedPhrases: string[];
   requiredPhrases: string[];
   brandTone: string;
+  /** Review URL for GBP review links (Level 3). Kept separate from website. */
+  reviewUrl?: string;
   /** Per-business uniqueness engine tuning. Falls back to DEFAULT_UNIQUENESS. */
   uniqueness?: UniquenessConfig;
   /** Which generation provider this business uses. Defaults to 'mock'. */
@@ -63,6 +67,10 @@ export interface ContentItem extends Audit {
   tags: string[];
   notes: string;
   archived?: boolean;
+  /** Master Content Asset this item was distributed from (Level 3). */
+  assetId?: string;
+  /** Approval workflow state (Level 3). */
+  approvalState?: ApprovalState;
 }
 
 export interface CalendarItem extends Audit {
@@ -124,6 +132,10 @@ export interface MediaItem extends Audit {
   status: ContentStatus;
   tags: string[];
   sourceContentId?: string;
+  // Photo optimization fields (Level 3).
+  filename?: string;
+  altText?: string;
+  category?: string;
 }
 
 export interface GenerationCostEntry extends Audit {
