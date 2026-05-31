@@ -1,18 +1,10 @@
-// Thin wrapper around the Anthropic Messages API. Returns parsed JSON + usage.
+// Anthropic Claude caller. Returns parsed JSON + token usage.
 import Anthropic from '@anthropic-ai/sdk';
+import { extractJson } from './json';
 import type { Usage } from './types';
 
-// Default model; override with the CONTENT_OS_MODEL env var.
-const MODEL = process.env.CONTENT_OS_MODEL || 'claude-sonnet-4-6';
-
-function extractJson(text: string): unknown {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const raw = fenced ? fenced[1] : text;
-  const start = raw.indexOf('{');
-  const end = raw.lastIndexOf('}');
-  if (start === -1 || end === -1) throw new Error('Model did not return JSON.');
-  return JSON.parse(raw.slice(start, end + 1));
-}
+// Default model; override with the CONTENT_OS_CLAUDE_MODEL env var.
+const MODEL = process.env.CONTENT_OS_CLAUDE_MODEL || 'claude-sonnet-4-6';
 
 export async function callClaude(
   apiKey: string,

@@ -1,39 +1,27 @@
 // Provider layer. Pages resolve a provider per business via providerFor(); agents
-// use a global default. Claude is per-tenant (needs businessId for the function
-// call); mock/openai/gemini are singletons. Generators never import a concrete one.
+// use the mock default. LLM providers (claude/openai/gemini) bind to the tenant
+// (they need businessId for the function call); mock is a singleton. Generators
+// never import a concrete provider.
 import type { ContentProvider } from './types';
-import type { ProviderName } from '../cost';
 import type { BrandSettings } from '../../../types/models';
 import { mockContentProvider } from './mockProvider';
-import { openaiContentProvider } from './openaiProvider';
-import { geminiContentProvider } from './geminiProvider';
-import { makeClaudeProvider } from './claudeProvider';
+import { makeLlmProvider, type LlmName } from './llmProvider';
 
 export type { ContentProvider, ProviderOutput } from './types';
 export { MockContentProvider, mockContentProvider } from './mockProvider';
-export { ClaudeContentProvider, makeClaudeProvider } from './claudeProvider';
-export { OpenAIProvider, openaiContentProvider } from './openaiProvider';
-export { GeminiProvider, geminiContentProvider } from './geminiProvider';
+export { LlmContentProvider, makeLlmProvider } from './llmProvider';
+export { makeClaudeProvider } from './claudeProvider';
+export { makeOpenAIProvider } from './openaiProvider';
+export { makeGeminiProvider } from './geminiProvider';
 
-// Singletons that need no per-business context.
-const SINGLETONS: Record<Exclude<ProviderName, 'claude'>, ContentProvider> = {
-  mock: mockContentProvider,
-  openai: openaiContentProvider,
-  gemini: geminiContentProvider,
-};
-
-/** Resolve the active provider for a business. Claude binds to the tenant. */
+/** Resolve the active provider for a business. LLM providers bind to the tenant. */
 export function providerFor(brand: BrandSettings | null, businessId: string | null): ContentProvider {
-  const name: ProviderName = brand?.provider ?? 'mock';
-  if (name === 'claude') return businessId ? makeClaudeProvider(businessId) : mockContentProvider;
-  return SINGLETONS[name] ?? mockContentProvider;
+  const name = brand?.provider ?? 'mock';
+  if (name === 'mock') return mockContentProvider;
+  return businessId ? makeLlmProvider(name as LlmName, businessId) : mockContentProvider;
 }
 
-// Agents use a global default (the page path uses providerFor instead).
-let active: ContentProvider = mockContentProvider;
+// Agents use the mock default (the page path uses providerFor instead).
 export function getActiveProvider(): ContentProvider {
-  return active;
-}
-export function setActiveProvider(name: Exclude<ProviderName, 'claude'>): void {
-  active = SINGLETONS[name];
+  return mockContentProvider;
 }

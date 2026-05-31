@@ -1,8 +1,6 @@
-// Future: OpenAI provider. Not implemented yet.
-import { UnconfiguredProvider } from './unconfigured';
+// OpenAI provider — a thin binding over the generic LLM provider.
+import { makeLlmProvider, type LlmContentProvider } from './llmProvider';
+import type { GenerateTransport } from '../functionsClient';
 
-export class OpenAIProvider extends UnconfiguredProvider {
-  readonly name = 'openai' as const;
-}
-
-export const openaiContentProvider = new OpenAIProvider();
+export const makeOpenAIProvider = (businessId: string, transport?: GenerateTransport): LlmContentProvider =>
+  makeLlmProvider('openai', businessId, transport);

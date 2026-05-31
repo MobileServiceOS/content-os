@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeClaudeProvider } from './claudeProvider';
+import { makeOpenAIProvider } from './openaiProvider';
+import { makeGeminiProvider } from './geminiProvider';
 import type { GenerateResponse, GenerateTransport } from '../functionsClient';
 import type { BrandSettings } from '../../../types/models';
 import type { RecentByType } from '../../../types/generation';
@@ -56,6 +58,16 @@ describe('ClaudeContentProvider', () => {
     ]));
     const out = await provider.generateContent({ platform: 'instagram' }, brand, recent());
     expect(out.result.caption?.text).not.toMatch(/^thank you/i);
+  });
+
+  it('openai + gemini bindings share the logic and report their own provider/cost', async () => {
+    const transport = scriptedTransport(['A fresh openai/gemini caption about Miami tires']);
+    const openai = await makeOpenAIProvider('b1', transport).generateContent({ platform: 'instagram' }, brand, recent());
+    expect(openai.result.caption?.text).toBeTruthy();
+    expect(openai.cost.provider).toBe('openai');
+    const gemini = await makeGeminiProvider('b1', scriptedTransport(['A gemini caption'])).generateContent({ platform: 'instagram' }, brand, recent());
+    expect(gemini.cost.provider).toBe('gemini');
+    expect(gemini.records).toHaveLength(3);
   });
 
   it('produces three distinct review responses', async () => {

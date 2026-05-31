@@ -1,8 +1,6 @@
-// Future: Google Gemini provider. Not implemented yet.
-import { UnconfiguredProvider } from './unconfigured';
+// Google Gemini provider — a thin binding over the generic LLM provider.
+import { makeLlmProvider, type LlmContentProvider } from './llmProvider';
+import type { GenerateTransport } from '../functionsClient';
 
-export class GeminiProvider extends UnconfiguredProvider {
-  readonly name = 'gemini' as const;
-}
-
-export const geminiContentProvider = new GeminiProvider();
+export const makeGeminiProvider = (businessId: string, transport?: GenerateTransport): LlmContentProvider =>
+  makeLlmProvider('gemini', businessId, transport);

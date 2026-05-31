@@ -98,14 +98,16 @@ export default function BrandSettings() {
           onChange={(v) => set({ provider: v as Brand['provider'] })}
           options={[
             { value: 'mock', label: 'Template (no AI — default)' },
-            { value: 'claude', label: 'Claude (requires deployed function)' },
-            { value: 'openai', label: 'OpenAI (coming soon)' },
-            { value: 'gemini', label: 'Gemini (coming soon)' },
+            { value: 'claude', label: 'Claude' },
+            { value: 'openai', label: 'OpenAI' },
+            { value: 'gemini', label: 'Gemini' },
           ]}
         />
         <p className="muted" style={{ margin: 0, fontSize: '0.72rem' }}>
-          Claude routes through the secure serverless function. OpenAI/Gemini are not implemented yet
-          and will throw until built. All providers run through the same uniqueness + brand checks.
+          AI providers route through the secure serverless function (each needs its API key set
+          + the function deployed — see SETUP.md). All providers run through the same uniqueness
+          + brand checks. Without a configured key, generation will error and you can switch back
+          to Template.
         </p>
       </div>
 

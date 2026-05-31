@@ -81,27 +81,27 @@ member doc at `businesses/{businessId}/members/{uid}` with a role
 - After seeding, nav renders and all routes load.
 - A **viewer** account does not see the generator links in the nav.
 
-## 7. Enable Claude generation (Phase 2, optional)
+## 7. Enable AI generation (Phase 2, optional)
 
 By default every business uses the template (`mock`) provider — no AI, no backend.
-To switch a business to real Claude generation:
+To switch a business to a real LLM (Claude, OpenAI, or Gemini):
 
 1. **Upgrade Firebase to the Blaze plan** (Cloud Functions require it; cost is
    ~$0 at low volume).
-2. **Set the Anthropic key as a Functions secret** (never commit it):
+2. **Set the provider key(s) you want as Functions secrets** (never commit them):
    ```bash
-   firebase functions:secrets:set ANTHROPIC_API_KEY
-   # optional: choose a model (defaults to claude-sonnet-4-6)
+   firebase functions:secrets:set ANTHROPIC_API_KEY   # Claude
+   firebase functions:secrets:set OPENAI_API_KEY      # OpenAI
+   firebase functions:secrets:set GEMINI_API_KEY      # Gemini
    ```
+   You only need the key for the provider(s) you'll use.
 3. **Deploy the function:**
    ```bash
    firebase deploy --only functions
    ```
 4. In the app, open **Brand Settings → Generation provider** (owner only) and
-   select **Claude**. Save. Generation now routes through the serverless function;
-   the uniqueness + BrandGuardian checks still run client-side.
+   select **Claude / OpenAI / Gemini**. Save. Generation now routes through the
+   serverless function; the uniqueness + BrandGuardian checks still run client-side.
 
-See [functions/README.md](./functions/README.md) for details. The Anthropic key
-lives only in the Functions secret — it never reaches the browser.
-
-> OpenAI and Gemini providers are stubbed (`NotConfiguredError`) until implemented.
+See [functions/README.md](./functions/README.md) for details + model overrides.
+The API keys live only in Functions secrets — they never reach the browser.

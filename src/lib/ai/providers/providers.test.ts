@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { getActiveProvider, mockContentProvider, providerFor } from './index';
-import { openaiContentProvider } from './openaiProvider';
-import { geminiContentProvider } from './geminiProvider';
-import type { ContentProvider } from './types';
-import { NotConfiguredError } from '../types';
 import type { BrandSettings } from '../../../types/models';
 import type { RecentByType } from '../../../types/generation';
 
@@ -48,16 +44,12 @@ describe('provider layer', () => {
     expect(repurpose.result.hooks).toHaveLength(5);
   });
 
-  it('unimplemented providers throw NotConfiguredError', async () => {
-    const futures: ContentProvider[] = [openaiContentProvider, geminiContentProvider];
-    for (const p of futures) {
-      await expect(p.generateContent({ platform: 'instagram' }, brand, recent())).rejects.toBeInstanceOf(NotConfiguredError);
-    }
-  });
-
-  it('providerFor resolves mock by default and claude when selected', () => {
+  it('providerFor resolves the right provider per business', () => {
     expect(providerFor(brand, 'b1').name).toBe('mock');
     expect(providerFor({ ...brand, provider: 'claude' }, 'b1').name).toBe('claude');
     expect(providerFor({ ...brand, provider: 'openai' }, 'b1').name).toBe('openai');
+    expect(providerFor({ ...brand, provider: 'gemini' }, 'b1').name).toBe('gemini');
+    // Falls back to mock when no tenant is resolved yet.
+    expect(providerFor({ ...brand, provider: 'claude' }, null).name).toBe('mock');
   });
 });

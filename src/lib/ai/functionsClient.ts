@@ -5,8 +5,10 @@ import type { BrandSettings } from '../../types/models';
 import type { GenerationType } from '../../types/generation';
 
 export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose';
+export type LlmProviderName = 'claude' | 'openai' | 'gemini';
 
 export interface GenerateArgs {
+  provider: LlmProviderName;
   businessId: string;
   kind: GenKind;
   payload: Record<string, unknown>;

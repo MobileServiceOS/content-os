@@ -1,7 +1,7 @@
 {
   "name": "content-os-functions",
   "private": true,
-  "description": "Content OS serverless backend — holds the Anthropic key and calls Claude.",
+  "description": "Content OS serverless backend — holds the LLM API keys and calls Claude/OpenAI/Gemini.",
   "engines": {
     "node": "20"
   },
@@ -14,8 +14,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
+    "@google/generative-ai": "^0.21.0",
     "firebase-admin": "^12.7.0",
-    "firebase-functions": "^6.1.1"
+    "firebase-functions": "^6.1.1",
+    "openai": "^4.73.0"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

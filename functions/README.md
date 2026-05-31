@@ -1,7 +1,8 @@
 # Content OS — Functions (serverless backend)
 
-The one piece of backend Content OS needs: a single callable that holds the
-Anthropic API key and calls Claude. The key **never** ships to the browser.
+The one piece of backend Content OS needs: a single callable that holds the LLM
+API keys and calls **Claude / OpenAI / Gemini** (chosen per business). Keys
+**never** ship to the browser.
 
 ## `generate` callable
 
@@ -12,15 +13,17 @@ Anthropic API key and calls Claude. The key **never** ships to the browser.
    requires role `owner` or `manager`.
 3. Builds a brand-aware prompt (`prompts.ts`) enforcing the content rules
    (banned openers/phrases, not-offered services, no keyword stuffing).
-4. Calls Claude (`anthropic.ts`) and returns `{ result, usage }` (strict JSON +
-   token usage).
+4. Routes to the requested provider — Claude (`anthropic.ts`), OpenAI
+   (`openai.ts`), or Gemini (`gemini.ts`) — and returns `{ result, usage }`
+   (strict JSON + token usage). Only the chosen provider's key is read.
 
 The client (`ClaudeContentProvider`) then runs each candidate through the same
 uniqueness + BrandGuardian gate and regenerates on collision — so the engine
 stays the single source of truth.
 
-**Request:** `{ businessId, kind, payload, brand, avoid? }`
-where `kind ∈ content | script | review | social | repurpose`.
+**Request:** `{ provider, businessId, kind, payload, brand, avoid? }`
+where `provider ∈ claude | openai | gemini` and
+`kind ∈ content | script | review | social | repurpose`.
 
 ## Local
 
@@ -30,14 +33,20 @@ npm install
 npm run build        # tsc -> lib/
 ```
 
-## Configure the key (never commit it)
+## Configure keys (never commit them)
+
+Set only the provider keys you intend to use:
 
 ```bash
 # from the repo root, with the Firebase CLI logged in + project selected
-firebase functions:secrets:set ANTHROPIC_API_KEY
-# (optional) pick a model — defaults to claude-sonnet-4-6
-firebase functions:secrets:set CONTENT_OS_MODEL   # or set as an env var
+firebase functions:secrets:set ANTHROPIC_API_KEY   # for Claude
+firebase functions:secrets:set OPENAI_API_KEY      # for OpenAI
+firebase functions:secrets:set GEMINI_API_KEY      # for Gemini
 ```
+
+Models default to `claude-sonnet-4-6`, `gpt-4o-mini`, and `gemini-1.5-flash`.
+Override via env vars `CONTENT_OS_CLAUDE_MODEL`, `CONTENT_OS_OPENAI_MODEL`,
+`CONTENT_OS_GEMINI_MODEL`.
 
 ## Deploy
 
@@ -51,5 +60,7 @@ firebase deploy --only functions
 
 - The function and the client both keep a copy of the global banned-opener list;
   the client gate is authoritative.
+- Only the chosen provider's secret is read per request, so you can run with just
+  one key configured.
 - Region is the project default (us-central1). The client `getFunctions(app)`
   must match if you change it.

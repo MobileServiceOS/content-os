@@ -16,10 +16,12 @@ export { repurposeContent, type RepurposeOutput } from './repurposeGenerator';
 export { estimateCost, costFromTokens, approxTokens, type GenerationCost, type ProviderName } from './cost';
 export {
   getActiveProvider,
-  setActiveProvider,
   providerFor,
   mockContentProvider,
   makeClaudeProvider,
+  makeOpenAIProvider,
+  makeGeminiProvider,
+  makeLlmProvider,
   type ContentProvider,
   type ProviderOutput,
 } from './providers';

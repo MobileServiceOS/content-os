@@ -1,6 +1,7 @@
 // Request shapes for the `generate` callable. Kept independent of the client
 // package (separate build), mirroring the client's ContentProvider inputs.
 export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose';
+export type LlmProvider = 'claude' | 'openai' | 'gemini';
 
 export interface BrandLite {
   businessName: string;
@@ -19,6 +20,7 @@ export interface BrandLite {
 }
 
 export interface GenerateData {
+  provider: LlmProvider;
   businessId: string;
   kind: GenKind;
   payload: Record<string, unknown>;
