@@ -13,6 +13,7 @@ interface Item {
 
 const ITEMS: Item[] = [
   { to: '/', label: 'Home' },
+  { to: '/new-job', label: 'New Job', creatorsOnly: true },
   { to: '/generator', label: 'Generator', creatorsOnly: true },
   { to: '/script', label: 'Script', creatorsOnly: true },
   { to: '/review', label: 'Review', creatorsOnly: true },

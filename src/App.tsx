@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import NewJob from './pages/NewJob';
 import ContentGenerator from './pages/ContentGenerator';
 import ScriptWriter from './pages/ScriptWriter';
 import ReviewResponse from './pages/ReviewResponse';
@@ -33,6 +34,7 @@ export default function App() {
             }
           >
             <Route path="/" element={<Dashboard />} />
+            <Route path="/new-job" element={<NewJob />} />
             <Route path="/generator" element={<ContentGenerator />} />
             <Route path="/script" element={<ScriptWriter />} />
             <Route path="/review" element={<ReviewResponse />} />

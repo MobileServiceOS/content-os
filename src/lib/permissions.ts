@@ -6,6 +6,7 @@ export type Action =
   | 'content.edit'
   | 'content.delete'
   | 'content.read'
+  | 'content.approve'
   | 'calendar.edit'
   | 'brand.edit'
   | 'members.manage';
@@ -15,6 +16,7 @@ const MATRIX: Record<Action, Role[]> = {
   'content.create': ['owner', 'manager'],
   'content.edit': ['owner', 'manager'],
   'content.delete': ['owner'], // managers may delete their own drafts; checked separately in rules
+  'content.approve': ['owner'], // approval is owner-only
   'calendar.edit': ['owner', 'manager'],
   'brand.edit': ['owner'],
   'members.manage': ['owner'],
