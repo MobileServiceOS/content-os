@@ -46,3 +46,13 @@ export const generationHistoryCol = (businessId: string): CollectionReference =>
 
 export const generationCostsCol = (businessId: string): CollectionReference =>
   collection(db, 'businesses', businessId, 'generationCosts');
+
+export const mediaItemsCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'mediaItems');
+
+export const mediaItemDoc = (businessId: string, id: string): DocumentReference =>
+  doc(db, 'businesses', businessId, 'mediaItems', id);
+
+/** Storage path for a tenant's media asset. */
+export const mediaStoragePath = (businessId: string, fileName: string): string =>
+  `businesses/${businessId}/media/${fileName}`;

@@ -10,9 +10,9 @@ export { ScriptAgent } from './ScriptAgent';
 export { ReviewAgent } from './ReviewAgent';
 export { SocialAgent } from './SocialAgent';
 export { RepurposeAgent } from './RepurposeAgent';
+// Media agents (Phase 3 — wrap the image/video provider layer).
+export { ImageAgent, ThumbnailAgent, VideoAgent } from './media';
 // Future-proof placeholders (interfaces defined; not implemented).
-export { ImageAgent, VideoAgent } from './media';
-export type { ImageRequest, ImageResult, VideoRequest, VideoResult } from './media';
 export { ApprovalWorkflowAgent, PublishingAgent } from './workflow';
 export type { ApprovalRequest, ApprovalResult, PublishRequest, PublishResult } from './workflow';
 
@@ -22,6 +22,7 @@ import { ReviewAgent } from './ReviewAgent';
 import { SocialAgent } from './SocialAgent';
 import { RepurposeAgent } from './RepurposeAgent';
 import { BrandGuardianAgent } from './BrandGuardianAgent';
+import { ImageAgent, ThumbnailAgent, VideoAgent } from './media';
 import { getActiveProvider } from '../ai/providers';
 
 // Default registry routed through the active ContentProvider (the provider layer)
@@ -35,6 +36,9 @@ export const agents = {
   social: new SocialAgent(async (input, ctx) => (await getActiveProvider().generateSocialReply(input, ctx.brand, ctx.recent)).result),
   repurpose: new RepurposeAgent(async (input, ctx) => (await getActiveProvider().repurposeContent(input, ctx.brand, ctx.recent)).result),
   brandGuardian: new BrandGuardianAgent(),
+  image: new ImageAgent(),
+  thumbnail: new ThumbnailAgent(),
+  video: new VideoAgent(),
 } as const;
 
 export type AgentRegistry = typeof agents;

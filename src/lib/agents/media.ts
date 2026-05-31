@@ -1,48 +1,40 @@
-// Placeholder media agents for future image/video workflows. Interfaces are
-// defined now so callers and the registry can be typed; execute() throws until a
-// real backend (and likely a serverless step) is wired up. NO implementation yet.
+// Media agents (Phase 3). Wrap the image/video provider layer; they read the
+// per-business provider at execute time, so the registry can hold singletons.
 import { BaseAgent } from './BaseAgent';
-import { NotImplementedError } from './types';
 import type { AgentContext, AgentResult } from './types';
-import type { Platform } from '../../types/generation';
+import { imageProviderFor, videoProviderFor } from '../media';
+import type { ImageRequest, ImageOutput, VideoRequest, VideoOutput } from '../../types/media';
 
-export interface ImageRequest {
-  prompt: string;
-  style?: string;
-  aspectRatio?: '1:1' | '4:5' | '9:16' | '16:9';
-  platform?: Platform;
-}
-
-export interface ImageResult {
-  url: string;
-  alt: string;
-  width: number;
-  height: number;
-}
-
-export interface VideoRequest {
-  script: string;
-  durationSeconds: number;
-  style?: string;
-  platform?: Platform;
-}
-
-export interface VideoResult {
-  url: string;
-  thumbnailUrl: string;
-  durationSeconds: number;
-}
-
-export class ImageAgent extends BaseAgent<ImageRequest, ImageResult> {
+export class ImageAgent extends BaseAgent<ImageRequest, ImageOutput> {
   readonly name = 'ImageAgent';
-  protected async execute(_input: ImageRequest, _ctx: AgentContext): Promise<AgentResult<ImageResult>> {
-    throw new NotImplementedError(this.name);
+  protected async execute(input: ImageRequest, ctx: AgentContext): Promise<AgentResult<ImageOutput>> {
+    this.step('generate', 'ok', 'image');
+    const out = await imageProviderFor(ctx.brand).generateImage(input, ctx.brand, ctx.businessId);
+    return this.result(out);
   }
 }
 
-export class VideoAgent extends BaseAgent<VideoRequest, VideoResult> {
+export class ThumbnailAgent extends BaseAgent<ImageRequest, ImageOutput> {
+  readonly name = 'ThumbnailAgent';
+  protected async execute(input: ImageRequest, ctx: AgentContext): Promise<AgentResult<ImageOutput>> {
+    const req: ImageRequest = {
+      ...input,
+      aspectRatio: input.aspectRatio ?? '16:9',
+      style: [input.style, 'bold high-contrast thumbnail, punchy, space for large text']
+        .filter(Boolean)
+        .join(', '),
+    };
+    this.step('generate', 'ok', 'thumbnail');
+    const out = await imageProviderFor(ctx.brand).generateImage(req, ctx.brand, ctx.businessId);
+    return this.result(out);
+  }
+}
+
+export class VideoAgent extends BaseAgent<VideoRequest, VideoOutput> {
   readonly name = 'VideoAgent';
-  protected async execute(_input: VideoRequest, _ctx: AgentContext): Promise<AgentResult<VideoResult>> {
-    throw new NotImplementedError(this.name);
+  protected async execute(input: VideoRequest, ctx: AgentContext): Promise<AgentResult<VideoOutput>> {
+    this.step('generate', 'ok', 'video (mock)');
+    const out = await videoProviderFor().generateVideo(input, ctx.brand, ctx.businessId);
+    return this.result(out);
   }
 }

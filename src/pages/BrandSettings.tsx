@@ -109,6 +109,15 @@ export default function BrandSettings() {
           + brand checks. Without a configured key, generation will error and you can switch back
           to Template.
         </p>
+        <SelectField
+          label="Image provider"
+          value={draft.imageProvider ?? 'mock'}
+          onChange={(v) => set({ imageProvider: v as Brand['imageProvider'] })}
+          options={[
+            { value: 'mock', label: 'Placeholder (SVG — default)' },
+            { value: 'openai', label: 'OpenAI Images (needs OPENAI_API_KEY)' },
+          ]}
+        />
       </div>
 
       <div className="card stack" style={{ marginTop: 16 }}>

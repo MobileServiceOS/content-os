@@ -48,6 +48,8 @@ export interface BrandSettings {
   uniqueness?: UniquenessConfig;
   /** Which generation provider this business uses. Defaults to 'mock'. */
   provider?: 'mock' | 'claude' | 'openai' | 'gemini';
+  /** Which image provider this business uses. Defaults to 'mock'. */
+  imageProvider?: 'mock' | 'openai';
 }
 
 export interface ContentItem extends Audit {
@@ -108,6 +110,20 @@ export interface GenerationHistoryEntry extends Audit {
   similarityScore: number; // max similarity vs recent at accept time
   regenerationCount: number; // attempts before this output was accepted
   // createdAt (from Audit) is the timestamp.
+}
+
+export interface MediaItem extends Audit {
+  id: string;
+  kind: 'image' | 'thumbnail' | 'video';
+  prompt: string;
+  url: string; // Storage download URL (or inline data URL for the mock)
+  alt: string;
+  width: number;
+  height: number;
+  provider: string;
+  status: ContentStatus;
+  tags: string[];
+  sourceContentId?: string;
 }
 
 export interface GenerationCostEntry extends Audit {
