@@ -26,11 +26,14 @@ interface. The uniqueness engine, BrandGuardian, and quality scoring stay unchan
 
 ## Phase 3 — Visual content
 
-Implement the placeholder media agents (interfaces already defined).
+Media agents over a provider layer that mirrors the text one (`/media` Media Studio).
 
-- **Image Agent** — generate post/story images.
-- **Video Agent** — generate short-form video from a script.
-- **Thumbnail Agent** — generate thumbnails for YouTube/Shorts.
+- **Image Agent** — ✅ shipped. Mock SVG-placeholder provider (default) + OpenAI
+  Images (real, via the `generateImage` Cloud Function, reuses `OPENAI_API_KEY`).
+- **Thumbnail Agent** — ✅ shipped. Image agent tuned for bold 16:9 thumbnails.
+- **Video Agent** — ◻ partial. Wired over a **mock** video provider (poster + note);
+  real async video generation (job submit + poll + store) is a follow-up.
+- Generated media uploads to Storage and lands in the `mediaItems` gallery.
 
 ## Phase 4 — Collaboration & approval
 

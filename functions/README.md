@@ -25,6 +25,14 @@ stays the single source of truth.
 where `provider ∈ claude | openai | gemini` and
 `kind ∈ content | script | review | social | repurpose`.
 
+## `generateImage` callable
+
+Same auth + membership guard (`auth.ts`). Calls OpenAI Images (`openaiImage.ts`,
+default `gpt-image-1`, override `CONTENT_OS_IMAGE_MODEL`) and returns
+`{ b64, width, height }` (base64 PNG). Uses the `OPENAI_API_KEY` secret.
+
+**Request:** `{ businessId, prompt, aspectRatio?, style? }`.
+
 ## Local
 
 ```bash

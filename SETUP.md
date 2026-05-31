@@ -105,3 +105,14 @@ To switch a business to a real LLM (Claude, OpenAI, or Gemini):
 
 See [functions/README.md](./functions/README.md) for details + model overrides.
 The API keys live only in Functions secrets — they never reach the browser.
+
+### Image generation (Phase 3)
+
+Images default to a self-contained **placeholder** (SVG) — no backend needed. For
+real images, reuse the OpenAI key:
+
+1. Ensure `OPENAI_API_KEY` is set (step 2 above) and the function is deployed.
+2. **Brand Settings → Image provider** → select **OpenAI Images** → Save.
+
+Generated images upload to Firebase Storage and appear in the Media Studio gallery.
+Video generation is currently a **mock** poster (real async video is a follow-up).
