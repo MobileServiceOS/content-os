@@ -10,6 +10,11 @@ export { ScriptAgent } from './ScriptAgent';
 export { ReviewAgent } from './ReviewAgent';
 export { SocialAgent } from './SocialAgent';
 export { RepurposeAgent } from './RepurposeAgent';
+// Future-proof placeholders (interfaces defined; not implemented).
+export { ImageAgent, VideoAgent } from './media';
+export type { ImageRequest, ImageResult, VideoRequest, VideoResult } from './media';
+export { ApprovalWorkflowAgent, PublishingAgent } from './workflow';
+export type { ApprovalRequest, ApprovalResult, PublishRequest, PublishResult } from './workflow';
 
 import { ContentAgent } from './ContentAgent';
 import { ScriptAgent } from './ScriptAgent';

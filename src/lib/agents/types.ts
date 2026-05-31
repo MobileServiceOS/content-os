@@ -51,3 +51,11 @@ export interface Agent<I, O> {
 
 /** A generation function an agent wraps. Mock today, LLM-backed later. */
 export type GeneratorFn<I, O> = (input: I, ctx: AgentContext) => O | Promise<O>;
+
+/** Thrown by placeholder agents whose capability is planned but not built. */
+export class NotImplementedError extends Error {
+  constructor(agent: string) {
+    super(`${agent} is a planned capability and is not implemented yet.`);
+    this.name = 'NotImplementedError';
+  }
+}
