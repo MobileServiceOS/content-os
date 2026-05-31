@@ -4,6 +4,13 @@ Phase 1 (the MVP) is complete — see [PHASE-1.md](./PHASE-1.md). The architectu
 built so each phase below slots in without rework: the provider layer, agent
 framework, and uniqueness/quality engine are already in place.
 
+> **Level 3 (Business Agent OS) — ✅ shipped** (see [LEVEL-3-PLAN.md](./LEVEL-3-PLAN.md)).
+> Single-Source Content Engine + multi-platform distribution, GBP / Local SEO /
+> Photo agents, Lead Follow-Up / Missed Call / Review-template / Task agents, the
+> Approval Workflow + unified Approval Queue, a 6th quality dimension (AI-search)
+> + spam-risk, uniqueness window 100/500, 5 new collections, and the 8-section
+> **Command Center**. Phases 2–3 below (real LLM providers, image/video) are also done.
+
 ---
 
 ## Phase 2 — Real LLM providers
