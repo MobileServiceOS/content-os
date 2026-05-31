@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader';
 import { TextArea, TextField, SelectField } from '../components/ui/Field';
 import StatusBadge from '../components/ui/StatusBadge';
 import RoleGate from '../components/RoleGate';
+import PhotoOptimizer from '../components/PhotoOptimizer';
 import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { useMediaItems } from '../hooks/useMediaItems';
@@ -119,6 +120,10 @@ export default function Media() {
           </RoleGate>
         </div>
       )}
+
+      <RoleGate action="content.create">
+        <PhotoOptimizer />
+      </RoleGate>
 
       <div className="card stack" style={{ marginTop: 16 }}>
         <h2 style={{ margin: 0 }}>Gallery</h2>

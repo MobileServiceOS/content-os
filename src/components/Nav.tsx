@@ -20,6 +20,8 @@ const ITEMS: Item[] = [
   { to: '/social', label: 'Social', creatorsOnly: true },
   { to: '/repurpose', label: 'Repurpose', creatorsOnly: true },
   { to: '/media', label: 'Media', creatorsOnly: true },
+  { to: '/gbp', label: 'GBP', creatorsOnly: true },
+  { to: '/seo', label: 'SEO', creatorsOnly: true },
   { to: '/library', label: 'Library' },
   { to: '/calendar', label: 'Calendar' },
   { to: '/brand', label: 'Brand' },

@@ -12,6 +12,8 @@ import ReviewResponse from './pages/ReviewResponse';
 import SocialReply from './pages/SocialReply';
 import Repurpose from './pages/Repurpose';
 import Media from './pages/Media';
+import GbpStudio from './pages/GbpStudio';
+import SeoStudio from './pages/SeoStudio';
 import Library from './pages/Library';
 import Calendar from './pages/Calendar';
 import BrandSettings from './pages/BrandSettings';
@@ -41,6 +43,8 @@ export default function App() {
             <Route path="/social" element={<SocialReply />} />
             <Route path="/repurpose" element={<Repurpose />} />
             <Route path="/media" element={<Media />} />
+            <Route path="/gbp" element={<GbpStudio />} />
+            <Route path="/seo" element={<SeoStudio />} />
             <Route path="/library" element={<Library />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/brand" element={<BrandSettings />} />
