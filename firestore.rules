@@ -1,0 +1,107 @@
+rules_version = '2';
+
+// Content OS — multi-tenant isolation + role enforcement.
+// Access to anything under businesses/{businessId} requires a membership doc.
+// Roles: owner > manager > viewer. The members subcollection is the source of truth.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Is the caller a member of this business?
+    function isMember(bid) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/businesses/$(bid)/members/$(request.auth.uid));
+    }
+
+    // The caller's role within the business (null if not a member).
+    function roleOf(bid) {
+      return get(/databases/$(database)/documents/businesses/$(bid)/members/$(request.auth.uid)).data.role;
+    }
+
+    function hasRole(bid, roles) {
+      return isMember(bid) && roleOf(bid) in roles;
+    }
+
+    // Writes must keep the document inside its own tenant.
+    function sameTenant(bid) {
+      return request.resource.data.businessId == bid;
+    }
+
+    // Users may only read/write their own mapping doc.
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /businesses/{bid} {
+      allow read: if isMember(bid);
+      // Business creation is handled by the seed/admin flow; owners may update.
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if hasRole(bid, ['owner']);
+      allow delete: if false;
+
+      // Membership management — owners only (a member can read the roster).
+      match /members/{uid} {
+        allow read: if isMember(bid);
+        allow write: if hasRole(bid, ['owner'])
+          // Allow the very first owner to bootstrap their own membership at seed time.
+          || (signedIn() && request.auth.uid == uid
+              && get(/databases/$(database)/documents/businesses/$(bid)).data.ownerId == request.auth.uid);
+      }
+
+      // Brand settings — readable by members, editable by owners.
+      match /brandSettings/{doc} {
+        allow read: if isMember(bid);
+        allow write: if hasRole(bid, ['owner']);
+      }
+
+      // Content items — owners/managers write; deletes restricted (see below).
+      match /contentItems/{id} {
+        allow read: if isMember(bid);
+        allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid)
+          && request.resource.data.createdBy == request.auth.uid;
+        allow update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        // Owners delete anything; managers may delete only their own drafts.
+        allow delete: if hasRole(bid, ['owner'])
+          || (hasRole(bid, ['manager'])
+              && resource.data.createdBy == request.auth.uid
+              && resource.data.status == 'draft');
+      }
+
+      // Calendar items.
+      match /calendarItems/{id} {
+        allow read: if isMember(bid);
+        allow create, update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow delete: if hasRole(bid, ['owner', 'manager']);
+      }
+
+      // Review responses.
+      match /reviewResponses/{id} {
+        allow read: if isMember(bid);
+        allow create, update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow delete: if hasRole(bid, ['owner']);
+      }
+
+      // Social replies.
+      match /socialReplies/{id} {
+        allow read: if isMember(bid);
+        allow create, update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow delete: if hasRole(bid, ['owner']);
+      }
+
+      // Generation history — append-only record powering the uniqueness engine.
+      match /generationHistory/{id} {
+        allow read: if isMember(bid);
+        allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow update, delete: if false;
+      }
+    }
+
+    // Default deny everything else.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

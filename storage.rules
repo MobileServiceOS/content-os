@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Content OS storage — assets are namespaced per tenant and require membership.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isMember(bid) {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/businesses/$(bid)/members/$(request.auth.uid));
+    }
+
+    match /businesses/{bid}/{allPaths=**} {
+      allow read, write: if isMember(bid);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
