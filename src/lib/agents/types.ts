@@ -22,8 +22,13 @@ export interface AgentStep {
 /** What the BrandGuardian reports about a piece of generated text. */
 export interface GuardianReport {
   passed: boolean;
-  brandAlignment: number; // 0..1
-  uniqueness: number; // 0..1
+  // Five scoring dimensions (0..1).
+  uniqueness: number;
+  readability: number;
+  engagement: number;
+  brandAlignment: number;
+  localRelevance: number;
+  // Findings.
   bannedPhrases: string[];
   bannedOpeners: string[];
   keywordStuffing: boolean;
