@@ -25,6 +25,12 @@ export interface Member {
   createdAt: number;
 }
 
+export interface UniquenessConfig {
+  similarityThreshold: number;
+  maxRegenerationAttempts: number;
+  bannedOpenings: string[];
+}
+
 export interface BrandSettings {
   businessName: string;
   website: string;
@@ -38,6 +44,8 @@ export interface BrandSettings {
   bannedPhrases: string[];
   requiredPhrases: string[];
   brandTone: string;
+  /** Per-business uniqueness engine tuning. Falls back to DEFAULT_UNIQUENESS. */
+  uniqueness?: UniquenessConfig;
 }
 
 export interface ContentItem extends Audit {
@@ -84,9 +92,17 @@ export type GenerationType = 'hook' | 'caption' | 'cta' | 'script' | 'review' | 
 export interface GenerationHistoryEntry extends Audit {
   id: string;
   type: GenerationType;
+  generatorType: string; // 'content' | 'script' | 'review' | 'social' | 'repurpose'
+  hookCategory?: string;
+  contentCategory?: string;
   structureId: string;
   fingerprint: string;
   text: string;
+  uniquenessScore: number;
+  brandScore: number;
+  similarityScore: number; // max similarity vs recent at accept time
+  regenerationCount: number; // attempts before this output was accepted
+  // createdAt (from Audit) is the timestamp.
 }
 
 export interface AppUser {

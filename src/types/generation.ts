@@ -41,6 +41,8 @@ export interface GeneratedBlock {
   type: GenerationType;
   structureId: string;
   text: string;
+  /** Pool category the structure came from (e.g. hook category, caption framework). */
+  category?: string;
 }
 
 export interface QualityScore {
@@ -48,8 +50,48 @@ export interface QualityScore {
   readability: number; // 0..1
   brandAlignment: number; // 0..1
   engagement: number; // 0..1
+  localRelevance: number; // 0..1
   overall: number; // 0..1
 }
+
+/** Hook categories (HOOK VARIATION SYSTEM). */
+export type HookCategory =
+  | 'curiosity'
+  | 'shock'
+  | 'mistake'
+  | 'myth'
+  | 'emergency'
+  | 'customer_story'
+  | 'convenience'
+  | 'time_savings'
+  | 'cost_savings'
+  | 'educational';
+
+/** Caption frameworks (CAPTION VARIATION SYSTEM). */
+export type CaptionFramework =
+  | 'problem_solution'
+  | 'storytelling'
+  | 'timeline'
+  | 'customer_perspective'
+  | 'educational'
+  | 'comparison'
+  | 'before_after'
+  | 'emergency'
+  | 'myth_busting'
+  | 'convenience';
+
+/** Per-business uniqueness engine configuration. */
+export interface UniquenessConfig {
+  similarityThreshold: number; // 0..1 — regenerate when candidate >= this vs recent
+  maxRegenerationAttempts: number; // attempts before accepting best candidate
+  bannedOpenings: string[]; // extra per-business banned opener phrases
+}
+
+export const DEFAULT_UNIQUENESS: UniquenessConfig = {
+  similarityThreshold: 0.6,
+  maxRegenerationAttempts: 5,
+  bannedOpenings: [],
+};
 
 export interface GenerationResult {
   hook?: GeneratedBlock;
