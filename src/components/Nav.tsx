@@ -10,29 +10,30 @@ import { can } from '../lib/permissions';
 interface Item {
   to: string;
   label: string;
+  icon: string;
   creatorsOnly?: boolean;
   ownerOnly?: boolean;
   group?: string;
 }
 
 const ITEMS: Item[] = [
-  { to: '/', label: 'Home' },
-  { to: '/new-job', label: 'New Job', creatorsOnly: true, group: 'Create' },
-  { to: '/generator', label: 'Generator', creatorsOnly: true, group: 'Create' },
-  { to: '/script', label: 'Script', creatorsOnly: true, group: 'Create' },
-  { to: '/review', label: 'Review', creatorsOnly: true, group: 'Create' },
-  { to: '/social', label: 'Social', creatorsOnly: true, group: 'Create' },
-  { to: '/repurpose', label: 'Repurpose', creatorsOnly: true, group: 'Create' },
-  { to: '/media', label: 'Media', creatorsOnly: true, group: 'Create' },
-  { to: '/gbp', label: 'GBP', creatorsOnly: true, group: 'Local' },
-  { to: '/seo', label: 'SEO', creatorsOnly: true, group: 'Local' },
-  { to: '/engagement', label: 'Engage', creatorsOnly: true, group: 'Local' },
-  { to: '/tasks', label: 'Tasks', group: 'Manage' },
-  { to: '/approvals', label: 'Approvals', group: 'Manage' },
-  { to: '/library', label: 'Library', group: 'Manage' },
-  { to: '/calendar', label: 'Calendar', group: 'Manage' },
-  { to: '/brand', label: 'Brand', group: 'Settings' },
-  { to: '/fingerprints', label: 'Fingerprints', ownerOnly: true, group: 'Settings' },
+  { to: '/', label: 'Home', icon: '🏠' },
+  { to: '/new-job', label: 'New Job', icon: '⚡', creatorsOnly: true, group: 'Create' },
+  { to: '/generator', label: 'Generator', icon: '✨', creatorsOnly: true, group: 'Create' },
+  { to: '/script', label: 'Script', icon: '🎬', creatorsOnly: true, group: 'Create' },
+  { to: '/review', label: 'Review', icon: '⭐', creatorsOnly: true, group: 'Create' },
+  { to: '/social', label: 'Social', icon: '💬', creatorsOnly: true, group: 'Create' },
+  { to: '/repurpose', label: 'Repurpose', icon: '♻️', creatorsOnly: true, group: 'Create' },
+  { to: '/media', label: 'Media', icon: '🖼️', creatorsOnly: true, group: 'Create' },
+  { to: '/gbp', label: 'GBP', icon: '📍', creatorsOnly: true, group: 'Local' },
+  { to: '/seo', label: 'SEO', icon: '🔎', creatorsOnly: true, group: 'Local' },
+  { to: '/engagement', label: 'Engage', icon: '🤝', creatorsOnly: true, group: 'Local' },
+  { to: '/tasks', label: 'Tasks', icon: '☑️', group: 'Manage' },
+  { to: '/approvals', label: 'Approvals', icon: '🛡️', group: 'Manage' },
+  { to: '/library', label: 'Library', icon: '📚', group: 'Manage' },
+  { to: '/calendar', label: 'Calendar', icon: '🗓️', group: 'Manage' },
+  { to: '/brand', label: 'Brand', icon: '🎨', group: 'Settings' },
+  { to: '/fingerprints', label: 'Fingerprints', icon: '🔬', ownerOnly: true, group: 'Settings' },
 ];
 
 export default function Nav() {
@@ -61,6 +62,7 @@ export default function Nav() {
             <Fragment key={i.to}>
               {header && <div className="nav-group">{header}</div>}
               <NavLink to={i.to} end={i.to === '/'} className={({ isActive }) => (isActive ? 'active' : undefined)}>
+                <span className="nico">{i.icon}</span>
                 {i.label}
               </NavLink>
             </Fragment>

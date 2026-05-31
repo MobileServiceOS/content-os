@@ -15,20 +15,26 @@ import { useMediaItems } from '../hooks/useMediaItems';
 import { reviewResponsesCol, socialRepliesCol } from '../lib/firebase/paths';
 import { agents } from '../lib/agents';
 
-function Stat({ label, value }: { label: string; value: number | string }) {
+const ACCENT = {
+  violet: 'var(--c-violet)', blue: 'var(--c-blue)', cyan: 'var(--c-cyan)',
+  emerald: 'var(--c-emerald)', amber: 'var(--c-amber)', pink: 'var(--c-pink)', orange: 'var(--c-orange)',
+} as const;
+type Accent = keyof typeof ACCENT;
+
+function Stat({ label, value, accent }: { label: string; value: number | string; accent: Accent }) {
   return (
-    <div className="card">
-      <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{value}</div>
+    <div className="card tile" style={{ ['--accent' as string]: ACCENT[accent] }}>
+      <div className="stat-value">{value}</div>
       <div className="muted" style={{ fontSize: '0.78rem' }}>{label}</div>
     </div>
   );
 }
 
-function Section({ title, children, to, cta }: { title: string; children: ReactNode; to?: string; cta?: string }) {
+function Section({ title, children, to, cta, accent }: { title: string; children: ReactNode; to?: string; cta?: string; accent: Accent }) {
   return (
     <div className="card stack" style={{ marginTop: 16 }}>
       <div className="row between">
-        <h2 style={{ margin: 0 }}>{title}</h2>
+        <h2 style={{ margin: 0 }}><span className="sec-dot" style={{ ['--accent' as string]: ACCENT[accent] }} />{title}</h2>
         {to && <Link className="btn btn-sm" to={to}>{cta ?? 'Open'}</Link>}
       </div>
       {children}
@@ -110,71 +116,71 @@ export default function Dashboard() {
         </div>
       </RoleGate>
 
-      <Section title="Agent overview">
+      <Section title="Agent overview" accent="violet">
         <div className="grid grid-3">
-          <Stat label="Agents active" value={Object.keys(agents).length} />
-          <Stat label="Tasks completed" value={m.tasksDone} />
-          <Stat label="Pending approvals" value={m.pendingApprovals} />
-          <Stat label="Content items" value={active.length} />
-          <Stat label="Review responses" value={reviewCount} />
-          <Stat label="Social replies" value={socialCount} />
+          <Stat label="Agents active" value={Object.keys(agents).length} accent="violet" />
+          <Stat label="Tasks completed" value={m.tasksDone} accent="emerald" />
+          <Stat label="Pending approvals" value={m.pendingApprovals} accent="orange" />
+          <Stat label="Content items" value={active.length} accent="blue" />
+          <Stat label="Review responses" value={reviewCount} accent="pink" />
+          <Stat label="Social replies" value={socialCount} accent="cyan" />
         </div>
       </Section>
 
-      <Section title="Content" to="/library" cta="Library">
+      <Section title="Content" to="/library" cta="Library" accent="blue">
         <div className="grid grid-2">
-          <Stat label="Draft" value={m.drafts} />
-          <Stat label="Approved" value={m.approved} />
-          <Stat label="Scheduled" value={m.scheduled} />
-          <Stat label="Posted" value={m.posted} />
+          <Stat label="Draft" value={m.drafts} accent="blue" />
+          <Stat label="Approved" value={m.approved} accent="emerald" />
+          <Stat label="Scheduled" value={m.scheduled} accent="amber" />
+          <Stat label="Posted" value={m.posted} accent="cyan" />
         </div>
       </Section>
 
-      <Section title="Reputation" to="/review" cta="Review">
+      <Section title="Reputation" to="/review" cta="Review" accent="pink">
         <div className="grid grid-3">
-          <Stat label="Review responses" value={reviewCount} />
-          <Stat label="Social replies" value={socialCount} />
-          <Stat label="Approved content" value={m.approved} />
+          <Stat label="Review responses" value={reviewCount} accent="pink" />
+          <Stat label="Social replies" value={socialCount} accent="cyan" />
+          <Stat label="Approved content" value={m.approved} accent="emerald" />
         </div>
         <p className="muted" style={{ margin: 0, fontSize: '0.72rem' }}>Live review ingest arrives with the GBP API (Phase 5).</p>
       </Section>
 
-      <Section title="GBP" to="/gbp" cta="GBP Studio">
+      <Section title="GBP" to="/gbp" cta="GBP Studio" accent="amber">
         <div className="grid grid-2">
-          <Stat label="GBP posts" value={gbp.length} />
-          <Stat label="Pending GBP" value={m.pendingGbp} />
-          <Stat label="Media assets" value={media.length} />
-          <Stat label="GBP tasks" value={m.gbpTasks} />
+          <Stat label="GBP posts" value={gbp.length} accent="amber" />
+          <Stat label="Pending GBP" value={m.pendingGbp} accent="orange" />
+          <Stat label="Media assets" value={media.length} accent="violet" />
+          <Stat label="GBP tasks" value={m.gbpTasks} accent="blue" />
         </div>
       </Section>
 
-      <Section title="Local SEO" to="/seo" cta="SEO Studio">
+      <Section title="Local SEO" to="/seo" cta="SEO Studio" accent="cyan">
         <div className="grid grid-2">
-          <Stat label="SEO content" value={seo.length} />
-          <Stat label="FAQ pieces" value={m.faqs} />
-          <Stat label="City coverage" value={m.cityCov} />
-          <Stat label="Service coverage" value={m.serviceCov} />
+          <Stat label="SEO content" value={seo.length} accent="cyan" />
+          <Stat label="FAQ pieces" value={m.faqs} accent="blue" />
+          <Stat label="City coverage" value={m.cityCov} accent="emerald" />
+          <Stat label="Service coverage" value={m.serviceCov} accent="violet" />
         </div>
       </Section>
 
-      <Section title="Tasks" to="/tasks" cta="Tasks">
+      <Section title="Tasks" to="/tasks" cta="Tasks" accent="emerald">
         <div className="grid grid-2">
-          <Stat label="Pending" value={m.tasksPending} />
-          <Stat label="Agent-created" value={m.tasksAgent} />
-          <Stat label="Completed" value={m.tasksDone} />
-          <Stat label="High priority" value={m.tasksHigh} />
+          <Stat label="Pending" value={m.tasksPending} accent="amber" />
+          <Stat label="Agent-created" value={m.tasksAgent} accent="violet" />
+          <Stat label="Completed" value={m.tasksDone} accent="emerald" />
+          <Stat label="High priority" value={m.tasksHigh} accent="pink" />
         </div>
       </Section>
 
-      <Section title="Approval queue" to="/approvals" cta="Open queue">
+      <Section title="Approval queue" to="/approvals" cta="Open queue" accent="orange">
         <div className="grid grid-3">
-          <Stat label="Content" value={m.pendingContent} />
-          <Stat label="GBP" value={m.pendingGbp} />
-          <Stat label="SEO" value={m.pendingSeo} />
+          <Stat label="Content" value={m.pendingContent} accent="blue" />
+          <Stat label="GBP" value={m.pendingGbp} accent="amber" />
+          <Stat label="SEO" value={m.pendingSeo} accent="cyan" />
         </div>
       </Section>
 
-      <Section title="Agent activity feed">
+      <Section title="Agent activity feed" accent="violet">
         {logs.length === 0 ? (
           <p className="muted">No agent activity yet. Generate something to see it here.</p>
         ) : (
