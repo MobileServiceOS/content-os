@@ -17,6 +17,10 @@ const STATUS_OPTIONS: { value: ContentStatus; label: string }[] = [
   { value: 'posted', label: 'Posted' },
 ];
 
+const STATUS_COLOR: Record<ContentStatus, string> = {
+  draft: 'var(--text-dim)', approved: 'var(--c-emerald)', scheduled: 'var(--c-amber)', posted: 'var(--c-blue)',
+};
+
 export default function Library() {
   const { items, loading, update, remove, duplicate, setStatus, archive } = useContentItems();
   const [search, setSearch] = useState('');
@@ -72,7 +76,7 @@ export default function Library() {
       ) : (
         <div className="stack" style={{ marginTop: 16 }}>
           {filtered.map((item) => (
-            <div key={item.id} className="card stack">
+            <div key={item.id} className="card stack tile" style={{ ['--accent' as string]: STATUS_COLOR[item.status] }}>
               <div className="row between">
                 <strong>{item.title}</strong>
                 <StatusBadge status={item.status} />
