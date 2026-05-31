@@ -17,8 +17,10 @@ export function substitute(
   rot: number,
 ): string {
   const area = brand.serviceAreas?.[0] ?? 'your area';
+  // Service names read as common nouns mid-sentence ("a mobile tire repair").
+  const service = (req.service ?? brand.services?.[0] ?? 'mobile tire service').toLowerCase();
   const tokens: Record<string, string> = {
-    service: req.service ?? brand.services?.[0] ?? 'mobile tire service',
+    service,
     city: req.city ?? area,
     area,
     vehicle: req.vehicle ?? 'vehicle',
