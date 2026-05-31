@@ -24,6 +24,7 @@ const ITEMS: Item[] = [
   { to: '/seo', label: 'SEO', creatorsOnly: true },
   { to: '/engagement', label: 'Engage', creatorsOnly: true },
   { to: '/tasks', label: 'Tasks' },
+  { to: '/approvals', label: 'Approvals' },
   { to: '/library', label: 'Library' },
   { to: '/calendar', label: 'Calendar' },
   { to: '/brand', label: 'Brand' },

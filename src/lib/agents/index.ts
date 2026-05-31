@@ -26,6 +26,7 @@ import { RepurposeAgent } from './RepurposeAgent';
 import { BrandGuardianAgent } from './BrandGuardianAgent';
 import { ImageAgent, ThumbnailAgent, VideoAgent } from './media';
 import { GBPAgent, LocalSeoAgent, PhotoAgent, LeadFollowUpAgent, MissedCallAgent, TaskAgent } from './level3';
+import { ApprovalWorkflowAgent } from './workflow';
 import { getActiveProvider } from '../ai/providers';
 
 // Default registry routed through the active ContentProvider (the provider layer)
@@ -48,6 +49,7 @@ export const agents = {
   leadFollowUp: new LeadFollowUpAgent(),
   missedCall: new MissedCallAgent(),
   task: new TaskAgent(),
+  approval: new ApprovalWorkflowAgent(),
 } as const;
 
 export type AgentRegistry = typeof agents;

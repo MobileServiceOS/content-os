@@ -1,22 +1,25 @@
-// Placeholder workflow-automation agents. Interfaces are defined now to support
-// future autonomous approval + publishing flows; execute() throws until built.
-// NO implementation yet, and no posting APIs are wired (per MVP scope).
+// Workflow-automation agents. ApprovalWorkflowAgent is implemented (Level 3.5);
+// PublishingAgent stays a placeholder until Phase 5 (no posting APIs yet).
 import { BaseAgent } from './BaseAgent';
 import { NotImplementedError } from './types';
 import type { AgentContext, AgentResult } from './types';
 import type { Platform } from '../../types/generation';
 import type { ContentStatus } from '../../types/models';
 
+export type ApprovalDecision = 'approved' | 'rejected';
+
 export interface ApprovalRequest {
-  contentItemId: string;
-  requestedBy: string;
+  refId: string;
+  refKind: string; // 'contentItems' | 'gbpPosts' | 'seoContent'
+  decision: ApprovalDecision;
+  reviewer: string;
 }
 
 export interface ApprovalResult {
-  contentItemId: string;
-  status: 'pending' | 'approved' | 'rejected';
-  reviewer?: string;
-  note?: string;
+  refId: string;
+  refKind: string;
+  status: ApprovalDecision;
+  reviewer: string;
 }
 
 export interface PublishRequest {
@@ -31,10 +34,13 @@ export interface PublishResult {
   externalId?: string;
 }
 
+// Records an approval decision (the Firestore transition happens in the hook
+// layer). Provides a consistent agent step + result for the activity feed.
 export class ApprovalWorkflowAgent extends BaseAgent<ApprovalRequest, ApprovalResult> {
   readonly name = 'ApprovalWorkflowAgent';
-  protected async execute(_input: ApprovalRequest, _ctx: AgentContext): Promise<AgentResult<ApprovalResult>> {
-    throw new NotImplementedError(this.name);
+  protected async execute(input: ApprovalRequest, _ctx: AgentContext): Promise<AgentResult<ApprovalResult>> {
+    this.step('decision', input.decision === 'approved' ? 'ok' : 'warn', `${input.decision} ${input.refKind}/${input.refId}`);
+    return this.result({ refId: input.refId, refKind: input.refKind, status: input.decision, reviewer: input.reviewer });
   }
 }
 
