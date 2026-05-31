@@ -31,6 +31,8 @@ export interface UniquenessConfig {
   similarityThreshold: number;
   maxRegenerationAttempts: number;
   bannedOpenings: string[];
+  recentWindow?: number;
+  deepWindow?: number;
 }
 
 export interface BrandSettings {

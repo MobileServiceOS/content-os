@@ -3,8 +3,9 @@
 import type { GenerationHistoryEntry } from '../../types/models';
 import type { RecentByType } from '../../types/generation';
 
-export function buildRecent(entries: GenerationHistoryEntry[]): RecentByType {
+/** Fast gate window (last `limit` per type). Default 100 (Level 3). */
+export function buildRecent(entries: GenerationHistoryEntry[], limit = 100): RecentByType {
   const r: RecentByType = { hook: [], caption: [], cta: [], script: [], review: [], reply: [] };
-  for (const e of entries) if (r[e.type] && r[e.type].length < 50) r[e.type].push(e.text);
+  for (const e of entries) if (r[e.type] && r[e.type].length < limit) r[e.type].push(e.text);
   return r;
 }

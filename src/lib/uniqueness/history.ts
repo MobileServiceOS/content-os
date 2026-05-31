@@ -18,7 +18,7 @@ export type NewHistoryEntry = Omit<
   'id' | 'businessId' | 'createdBy' | 'createdAt' | 'updatedAt'
 >;
 
-const RECENT_LIMIT = 50;
+const RECENT_LIMIT = 100;
 
 /** Last N outputs of a given type for the tenant, newest first. */
 export async function loadRecentByType(

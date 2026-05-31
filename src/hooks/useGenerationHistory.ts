@@ -14,7 +14,7 @@ function stripUndefined<T extends object>(o: T): T {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
 }
 
-export function useGenerationHistory(max = 100) {
+export function useGenerationHistory(max = 500) {
   const { businessId } = useBusiness();
   const [entries, setEntries] = useState<GenerationHistoryEntry[]>([]);
 

@@ -85,12 +85,16 @@ export interface UniquenessConfig {
   similarityThreshold: number; // 0..1 — regenerate when candidate >= this vs recent
   maxRegenerationAttempts: number; // attempts before accepting best candidate
   bannedOpenings: string[]; // extra per-business banned opener phrases
+  recentWindow?: number; // fast gate: compare against the last N outputs (default 100)
+  deepWindow?: number; // deep scan: compare against the last N outputs (default 500)
 }
 
 export const DEFAULT_UNIQUENESS: UniquenessConfig = {
   similarityThreshold: 0.6,
   maxRegenerationAttempts: 5,
   bannedOpenings: [],
+  recentWindow: 100,
+  deepWindow: 500,
 };
 
 export interface GenerationResult {
