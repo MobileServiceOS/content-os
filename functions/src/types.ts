@@ -1,0 +1,32 @@
+// Request shapes for the `generate` callable. Kept independent of the client
+// package (separate build), mirroring the client's ContentProvider inputs.
+export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose';
+
+export interface BrandLite {
+  businessName: string;
+  website: string;
+  phone: string;
+  serviceAreas: string[];
+  services: string[];
+  notOffered: string[];
+  socialHandles: string[];
+  ctas: string[];
+  localKeywords: string[];
+  bannedPhrases: string[];
+  requiredPhrases: string[];
+  brandTone: string;
+  bannedOpenings?: string[];
+}
+
+export interface GenerateData {
+  businessId: string;
+  kind: GenKind;
+  payload: Record<string, unknown>;
+  brand: BrandLite;
+  avoid?: string[]; // recent outputs to avoid repeating
+}
+
+export interface Usage {
+  inputTokens: number;
+  outputTokens: number;
+}
