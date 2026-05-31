@@ -1,6 +1,6 @@
 // Request shapes for the `generate` callable. Kept independent of the client
 // package (separate build), mirroring the client's ContentProvider inputs.
-export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose';
+export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose' | 'gbp' | 'seo' | 'photo';
 export type LlmProvider = 'claude' | 'openai' | 'gemini';
 
 export interface BrandLite {

@@ -12,6 +12,8 @@ export { SocialAgent } from './SocialAgent';
 export { RepurposeAgent } from './RepurposeAgent';
 // Media agents (Phase 3 — wrap the image/video provider layer).
 export { ImageAgent, ThumbnailAgent, VideoAgent } from './media';
+// Level 3 agents (GBP / Local SEO / Photo).
+export { GBPAgent, LocalSeoAgent, PhotoAgent } from './level3';
 // Future-proof placeholders (interfaces defined; not implemented).
 export { ApprovalWorkflowAgent, PublishingAgent } from './workflow';
 export type { ApprovalRequest, ApprovalResult, PublishRequest, PublishResult } from './workflow';
@@ -23,6 +25,7 @@ import { SocialAgent } from './SocialAgent';
 import { RepurposeAgent } from './RepurposeAgent';
 import { BrandGuardianAgent } from './BrandGuardianAgent';
 import { ImageAgent, ThumbnailAgent, VideoAgent } from './media';
+import { GBPAgent, LocalSeoAgent, PhotoAgent } from './level3';
 import { getActiveProvider } from '../ai/providers';
 
 // Default registry routed through the active ContentProvider (the provider layer)
@@ -39,6 +42,9 @@ export const agents = {
   image: new ImageAgent(),
   thumbnail: new ThumbnailAgent(),
   video: new VideoAgent(),
+  gbp: new GBPAgent(),
+  localSeo: new LocalSeoAgent(),
+  photo: new PhotoAgent(),
 } as const;
 
 export type AgentRegistry = typeof agents;

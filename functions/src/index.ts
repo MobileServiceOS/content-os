@@ -20,7 +20,7 @@ const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY');
 const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 
-const KINDS: GenKind[] = ['content', 'script', 'review', 'social', 'repurpose'];
+const KINDS: GenKind[] = ['content', 'script', 'review', 'social', 'repurpose', 'gbp', 'seo', 'photo'];
 const PROVIDERS: LlmProvider[] = ['claude', 'openai', 'gemini'];
 
 type Caller = (key: string, prompt: { system: string; user: string }) => Promise<{ json: unknown; usage: Usage }>;

@@ -19,6 +19,9 @@ const SCHEMAS: Record<GenKind, string> = {
   review: `{"short": string, "professional": string, "seoFriendly": string}`,
   social: `{"replies": string[3]}`,
   repurpose: `{"hooks": string[5], "captions": string[3], "shortScript": string, "longScript": string, "youtubeTitle": string, "youtubeDescription": string, "blogTopic": string, "socialPost": string}`,
+  gbp: `{"description": string, "hashtags": string[4-6]}`,
+  seo: `{"title": string, "body": string, "entities": string[], "questions": string[3-5]}`,
+  photo: `{"filename": string, "altText": string, "description": string, "category": string}`,
 };
 
 const KIND_BRIEF: Record<GenKind, string> = {
@@ -27,6 +30,9 @@ const KIND_BRIEF: Record<GenKind, string> = {
   review: 'Write three responses (short, professional, SEO-friendly) to the customer review. Match the sentiment of the star rating. Never automatically admit fault. Mention the service and city naturally, not as keyword stuffing.',
   social: 'Write three distinct, human replies to the comment or DM, matching the intent and tone.',
   repurpose: 'Repurpose the single source idea into the full set of formats.',
+  gbp: 'Write a Google Business Profile description. CRITICAL: the description must NEVER contain a call-to-action (no "call now", "book now", "contact us", "schedule today", "text us"). Mention the service and city naturally. Then provide a rotating hashtag block.',
+  seo: 'Write local SEO content of the requested type (service_page, city_page, faq, ai_search, or entity). Use natural language, real local + vehicle + tire entities, and answer questions people actually ask. No keyword stuffing, no repetitive city/service mentions.',
+  photo: 'Write photo metadata for the subject: a kebab-case filename, descriptive alt text, a unique natural description, and a category.',
 };
 
 export function buildPrompt(

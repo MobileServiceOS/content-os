@@ -4,7 +4,7 @@
 import type { BrandSettings } from '../../types/models';
 import type { GenerationType } from '../../types/generation';
 
-export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose';
+export type GenKind = 'content' | 'script' | 'review' | 'social' | 'repurpose' | 'gbp' | 'seo' | 'photo';
 export type LlmProviderName = 'claude' | 'openai' | 'gemini';
 
 export interface GenerateArgs {
@@ -75,8 +75,8 @@ export const callGenerate: GenerateTransport = async (args) => {
   return res.data;
 };
 
-/** Map a client GenerationType bucket to the function kind (for `avoid` lookup). */
-export const RECENT_KEY_FOR: Record<GenKind, GenerationType> = {
+/** Map a text kind to its recent-bucket (GBP/SEO/photo track recents separately). */
+export const RECENT_KEY_FOR: Partial<Record<GenKind, GenerationType>> = {
   content: 'caption',
   script: 'script',
   review: 'review',
