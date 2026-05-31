@@ -81,3 +81,72 @@ export const TONE_LABELS: Record<Tone, string> = {
   educational: 'Educational',
   humorous: 'Humorous',
 };
+
+// --- Per-generator request/result contracts (shared by agents + Stage B generators) ---
+
+export type ScriptFormat = 'talking_head' | 'voiceover';
+
+export interface ScriptRequest {
+  topic: string;
+  platform: Platform;
+  tone: Tone;
+  lengthSeconds: number; // 15 | 30 | 60 | custom
+  format: ScriptFormat;
+}
+
+export interface ScriptResult {
+  hook: string;
+  script: string;
+  shotList: string[];
+  onScreenText: string[];
+  cta: string;
+}
+
+export interface ReviewRequest {
+  reviewText: string;
+  rating: number; // 1..5
+  city?: string;
+  service?: string;
+  tone: Tone;
+}
+
+export interface ReviewResult {
+  short: string;
+  professional: string;
+  seoFriendly: string;
+}
+
+export type SocialIntent =
+  | 'question'
+  | 'pricing'
+  | 'booking'
+  | 'complaint'
+  | 'thank_you'
+  | 'general';
+
+export interface SocialRequest {
+  platform: Platform;
+  message: string;
+  tone: Tone;
+  intent: SocialIntent;
+}
+
+export interface SocialResult {
+  replies: string[]; // 3 distinct replies
+}
+
+export interface RepurposeRequest {
+  source: string;
+  platform?: Platform;
+}
+
+export interface RepurposeResult {
+  hooks: string[]; // 5
+  captions: string[]; // 3
+  shortScript: string;
+  longScript: string;
+  youtubeTitle: string;
+  youtubeDescription: string;
+  blogTopic: string;
+  socialPost: string;
+}
