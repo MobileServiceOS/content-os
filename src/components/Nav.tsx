@@ -1,4 +1,7 @@
-// Primary navigation. Generator links are hidden from viewers (read-only role).
+// Navigation. Desktop: a left sidebar with grouped links. Mobile: a top brand
+// bar + a scrollable bottom link bar (the sidebar flattens via CSS). Generator
+// links are hidden from viewers; Fingerprints is owner-only.
+import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
@@ -9,26 +12,27 @@ interface Item {
   label: string;
   creatorsOnly?: boolean;
   ownerOnly?: boolean;
+  group?: string;
 }
 
 const ITEMS: Item[] = [
   { to: '/', label: 'Home' },
-  { to: '/new-job', label: 'New Job', creatorsOnly: true },
-  { to: '/generator', label: 'Generator', creatorsOnly: true },
-  { to: '/script', label: 'Script', creatorsOnly: true },
-  { to: '/review', label: 'Review', creatorsOnly: true },
-  { to: '/social', label: 'Social', creatorsOnly: true },
-  { to: '/repurpose', label: 'Repurpose', creatorsOnly: true },
-  { to: '/media', label: 'Media', creatorsOnly: true },
-  { to: '/gbp', label: 'GBP', creatorsOnly: true },
-  { to: '/seo', label: 'SEO', creatorsOnly: true },
-  { to: '/engagement', label: 'Engage', creatorsOnly: true },
-  { to: '/tasks', label: 'Tasks' },
-  { to: '/approvals', label: 'Approvals' },
-  { to: '/library', label: 'Library' },
-  { to: '/calendar', label: 'Calendar' },
-  { to: '/brand', label: 'Brand' },
-  { to: '/fingerprints', label: 'Fingerprints', ownerOnly: true },
+  { to: '/new-job', label: 'New Job', creatorsOnly: true, group: 'Create' },
+  { to: '/generator', label: 'Generator', creatorsOnly: true, group: 'Create' },
+  { to: '/script', label: 'Script', creatorsOnly: true, group: 'Create' },
+  { to: '/review', label: 'Review', creatorsOnly: true, group: 'Create' },
+  { to: '/social', label: 'Social', creatorsOnly: true, group: 'Create' },
+  { to: '/repurpose', label: 'Repurpose', creatorsOnly: true, group: 'Create' },
+  { to: '/media', label: 'Media', creatorsOnly: true, group: 'Create' },
+  { to: '/gbp', label: 'GBP', creatorsOnly: true, group: 'Local' },
+  { to: '/seo', label: 'SEO', creatorsOnly: true, group: 'Local' },
+  { to: '/engagement', label: 'Engage', creatorsOnly: true, group: 'Local' },
+  { to: '/tasks', label: 'Tasks', group: 'Manage' },
+  { to: '/approvals', label: 'Approvals', group: 'Manage' },
+  { to: '/library', label: 'Library', group: 'Manage' },
+  { to: '/calendar', label: 'Calendar', group: 'Manage' },
+  { to: '/brand', label: 'Brand', group: 'Settings' },
+  { to: '/fingerprints', label: 'Fingerprints', ownerOnly: true, group: 'Settings' },
 ];
 
 export default function Nav() {
@@ -36,32 +40,33 @@ export default function Nav() {
   const { logout, user } = useAuth();
   const canCreate = can('content.create', role);
   const isOwner = role === 'owner';
+  const visible = ITEMS.filter((i) => (!i.creatorsOnly || canCreate) && (!i.ownerOnly || isOwner));
+
+  let lastGroup: string | undefined;
 
   return (
-    <>
-      <div className="nav-top">
-        <strong>Content OS</strong>
-        <div className="row">
-          <span className="muted" style={{ fontSize: '0.82rem' }}>
-            {user?.displayName || user?.email}
-          </span>
-          <button className="btn btn-sm" onClick={() => void logout()}>
-            Sign out
-          </button>
+    <aside className="sidebar">
+      <div className="side-head">
+        <span className="wordmark"><span className="spark">✦</span>Content OS</span>
+        <div className="side-user">
+          <span className="muted side-username">{user?.displayName || user?.email}</span>
+          <button className="btn btn-sm" onClick={() => void logout()}>Sign out</button>
         </div>
       </div>
-      <nav className="nav">
-        {ITEMS.filter((i) => (!i.creatorsOnly || canCreate) && (!i.ownerOnly || isOwner)).map((i) => (
-          <NavLink
-            key={i.to}
-            to={i.to}
-            end={i.to === '/'}
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
-          >
-            {i.label}
-          </NavLink>
-        ))}
+      <nav className="side-links">
+        {visible.map((i) => {
+          const header = i.group && i.group !== lastGroup ? i.group : null;
+          lastGroup = i.group;
+          return (
+            <Fragment key={i.to}>
+              {header && <div className="nav-group">{header}</div>}
+              <NavLink to={i.to} end={i.to === '/'} className={({ isActive }) => (isActive ? 'active' : undefined)}>
+                {i.label}
+              </NavLink>
+            </Fragment>
+          );
+        })}
       </nav>
-    </>
+    </aside>
   );
 }
