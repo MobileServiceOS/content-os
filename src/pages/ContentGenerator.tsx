@@ -19,11 +19,10 @@ import type {
   GenerationResult,
   Platform,
   ContentType,
-  RecentByType,
 } from '../types/generation';
 import type { GeneratedRecord } from '../lib/ai/shared';
 import type { GenerationCost } from '../lib/ai/cost';
-import type { GenerationHistoryEntry } from '../types/models';
+import { buildRecent } from '../lib/uniqueness/recent';
 
 const PLATFORMS = Object.entries(PLATFORM_LABELS).map(([value, label]) => ({ value: value as Platform, label }));
 const CONTENT_TYPES: { value: ContentType; label: string }[] = [
@@ -35,12 +34,6 @@ const CONTENT_TYPES: { value: ContentType; label: string }[] = [
   { value: 'educational', label: 'Educational post' },
   { value: 'promotional', label: 'Promotional post' },
 ];
-
-function buildRecent(entries: GenerationHistoryEntry[]): RecentByType {
-  const r: RecentByType = { hook: [], caption: [], cta: [], script: [], review: [], reply: [] };
-  for (const e of entries) if (r[e.type] && r[e.type].length < 50) r[e.type].push(e.text);
-  return r;
-}
 
 interface Generated {
   result: GenerationResult;

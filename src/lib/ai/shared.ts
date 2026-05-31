@@ -12,6 +12,9 @@ export interface GeneratedRecord {
   text: string;
   uniquenessScore: number;
   brandScore: number;
+  readabilityScore: number;
+  engagementScore: number;
+  localRelevanceScore: number;
   similarityScore: number;
   regenerationCount: number;
 }
@@ -25,8 +28,22 @@ export function toRecord(generatorType: string, er: EngineResult): GeneratedReco
     text: er.block.text,
     uniquenessScore: er.quality.uniqueness,
     brandScore: er.quality.brandAlignment,
+    readabilityScore: er.quality.readability,
+    engagementScore: er.quality.engagement,
+    localRelevanceScore: er.quality.localRelevance,
     similarityScore: er.similarityScore,
     regenerationCount: er.regenerationCount,
+  };
+}
+
+/** Map a record's flat scores to the shape ScoreBadges expects. */
+export function recordScores(r: GeneratedRecord) {
+  return {
+    uniqueness: r.uniquenessScore,
+    readability: r.readabilityScore,
+    engagement: r.engagementScore,
+    brandAlignment: r.brandScore,
+    localRelevance: r.localRelevanceScore,
   };
 }
 

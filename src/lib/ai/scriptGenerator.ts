@@ -68,6 +68,9 @@ export function generateScript(
     text: script,
     uniquenessScore: bodyQuality.uniqueness,
     brandScore: bodyQuality.brandAlignment,
+    readabilityScore: bodyQuality.readability,
+    engagementScore: bodyQuality.engagement,
+    localRelevanceScore: bodyQuality.localRelevance,
     similarityScore: maxSimilarity(script, recent.script ?? []),
     regenerationCount: 0,
   };

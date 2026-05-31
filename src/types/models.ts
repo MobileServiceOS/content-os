@@ -100,6 +100,9 @@ export interface GenerationHistoryEntry extends Audit {
   text: string;
   uniquenessScore: number;
   brandScore: number;
+  readabilityScore: number;
+  engagementScore: number;
+  localRelevanceScore: number;
   similarityScore: number; // max similarity vs recent at accept time
   regenerationCount: number; // attempts before this output was accepted
   // createdAt (from Audit) is the timestamp.
