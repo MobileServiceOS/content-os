@@ -14,6 +14,8 @@ import Repurpose from './pages/Repurpose';
 import Media from './pages/Media';
 import GbpStudio from './pages/GbpStudio';
 import SeoStudio from './pages/SeoStudio';
+import Engagement from './pages/Engagement';
+import Tasks from './pages/Tasks';
 import Library from './pages/Library';
 import Calendar from './pages/Calendar';
 import BrandSettings from './pages/BrandSettings';
@@ -45,6 +47,8 @@ export default function App() {
             <Route path="/media" element={<Media />} />
             <Route path="/gbp" element={<GbpStudio />} />
             <Route path="/seo" element={<SeoStudio />} />
+            <Route path="/engagement" element={<Engagement />} />
+            <Route path="/tasks" element={<Tasks />} />
             <Route path="/library" element={<Library />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/brand" element={<BrandSettings />} />

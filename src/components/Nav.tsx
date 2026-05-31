@@ -22,6 +22,8 @@ const ITEMS: Item[] = [
   { to: '/media', label: 'Media', creatorsOnly: true },
   { to: '/gbp', label: 'GBP', creatorsOnly: true },
   { to: '/seo', label: 'SEO', creatorsOnly: true },
+  { to: '/engagement', label: 'Engage', creatorsOnly: true },
+  { to: '/tasks', label: 'Tasks' },
   { to: '/library', label: 'Library' },
   { to: '/calendar', label: 'Calendar' },
   { to: '/brand', label: 'Brand' },
