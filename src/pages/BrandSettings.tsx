@@ -70,6 +70,7 @@ export default function BrandSettings() {
           <TextField label="Business name" value={draft.businessName} onChange={(v) => set({ businessName: v })} />
           <TextField label="Website" value={draft.website} onChange={(v) => set({ website: v })} />
           <TextField label="Phone" value={draft.phone} onChange={(v) => set({ phone: v })} />
+          <TextField label="Review URL (GBP)" value={draft.reviewUrl ?? ''} onChange={(v) => set({ reviewUrl: v })} placeholder="https://g.page/r/…/review" />
         </div>
         <ArrayField label="Service areas" value={draft.serviceAreas} onChange={(v) => set({ serviceAreas: v })} placeholder="Miami-Dade" />
         <div className="grid grid-2">
