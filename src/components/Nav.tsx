@@ -8,6 +8,7 @@ interface Item {
   to: string;
   label: string;
   creatorsOnly?: boolean;
+  ownerOnly?: boolean;
 }
 
 const ITEMS: Item[] = [
@@ -20,12 +21,14 @@ const ITEMS: Item[] = [
   { to: '/library', label: 'Library' },
   { to: '/calendar', label: 'Calendar' },
   { to: '/brand', label: 'Brand' },
+  { to: '/fingerprints', label: 'Fingerprints', ownerOnly: true },
 ];
 
 export default function Nav() {
   const { role } = useBusiness();
   const { logout, user } = useAuth();
   const canCreate = can('content.create', role);
+  const isOwner = role === 'owner';
 
   return (
     <>
@@ -41,7 +44,7 @@ export default function Nav() {
         </div>
       </div>
       <nav className="nav">
-        {ITEMS.filter((i) => !i.creatorsOnly || canCreate).map((i) => (
+        {ITEMS.filter((i) => (!i.creatorsOnly || canCreate) && (!i.ownerOnly || isOwner)).map((i) => (
           <NavLink
             key={i.to}
             to={i.to}

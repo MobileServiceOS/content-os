@@ -13,6 +13,7 @@ import Repurpose from './pages/Repurpose';
 import Library from './pages/Library';
 import Calendar from './pages/Calendar';
 import BrandSettings from './pages/BrandSettings';
+import Fingerprints from './pages/Fingerprints';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="/library" element={<Library />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/brand" element={<BrandSettings />} />
+            <Route path="/fingerprints" element={<Fingerprints />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
