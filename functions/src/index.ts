@@ -13,6 +13,7 @@ import { callOpenAI } from './openai';
 import { callGemini } from './gemini';
 import { generateImageOpenAI } from './openaiImage';
 import { generateVideoBroker } from './video';
+import { readMsosJobs } from './msos';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -21,6 +22,11 @@ const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY');
 const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 const HIGGSFIELD_CREDENTIALS = defineSecret('HIGGSFIELD_CREDENTIALS');
+// MSOS read-only bridge. MSOS_SERVICE_ACCOUNT = a Datastore-Viewer service-account
+// key JSON for the `mobile-service-os` project. MSOS_BUSINESS_ID = the Wheel Rush
+// business doc id in MSOS. Both set via `firebase functions:secrets:set ...`.
+const MSOS_SERVICE_ACCOUNT = defineSecret('MSOS_SERVICE_ACCOUNT');
+const MSOS_BUSINESS_ID = defineSecret('MSOS_BUSINESS_ID');
 
 const KINDS: GenKind[] = ['content', 'script', 'review', 'social', 'repurpose', 'gbp', 'seo', 'photo', 'lead', 'missed_call', 'review_template', 'task'];
 const PROVIDERS: LlmProvider[] = ['claude', 'openai', 'gemini'];
@@ -55,6 +61,35 @@ export const generate = onCall(
     }
   },
 );
+
+// READ-ONLY Marketing Director bridge to MSOS jobs. Verifies the caller is an
+// owner/manager of THIS (Content OS) business, then reads the configured MSOS
+// business's jobs via a service account. Never writes to MSOS.
+export const getMsosJobs = onCall({ secrets: [MSOS_SERVICE_ACCOUNT, MSOS_BUSINESS_ID] }, async (request) => {
+  const data = request.data as { businessId?: string };
+  if (!data?.businessId) {
+    throw new HttpsError('invalid-argument', 'businessId is required.');
+  }
+  await assertMember(request, data.businessId); // gate on the Content OS tenant
+
+  let serviceAccount: string;
+  let msosBusinessId: string;
+  try {
+    serviceAccount = MSOS_SERVICE_ACCOUNT.value();
+    msosBusinessId = MSOS_BUSINESS_ID.value();
+  } catch {
+    throw new HttpsError('failed-precondition', 'MSOS connection is not configured.');
+  }
+  if (!serviceAccount || !msosBusinessId) {
+    throw new HttpsError('failed-precondition', 'MSOS connection is not configured.');
+  }
+
+  try {
+    return await readMsosJobs(serviceAccount, msosBusinessId);
+  } catch (err) {
+    throw new HttpsError('internal', err instanceof Error ? err.message : 'Failed to read MSOS jobs.');
+  }
+});
 
 interface ImageData {
   businessId: string;
