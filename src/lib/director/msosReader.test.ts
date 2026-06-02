@@ -9,12 +9,13 @@ describe('normalizeJob (MSOS Job -> JobRecord)', () => {
       service: 'Mobile Tire Replacement', city: 'Hollywood', vehicleType: 'SUV',
       tireSize: '275/40R20', customerName: 'Ana P.', revenue: '$1,250.50',
       status: 'Completed', assignedToUid: 'uid-marcus', date: '2026-05-20',
+      tireCost: 600, materialCost: 50, // -> costUsd 650
       customerPhone: '305-555-0100', customerEmail: 'ana@example.com', // must NOT appear on JobRecord
     }, 'job1', names);
     expect(r).toEqual({
       id: 'job1', service: 'Mobile Tire Replacement', city: 'Hollywood', vehicle: 'SUV',
       technician: 'Marcus', tireSize: '275/40R20', customer: 'Ana P.',
-      ticketUsd: 1250.5, status: 'completed', completedAt: Date.parse('2026-05-20'),
+      ticketUsd: 1250.5, costUsd: 650, status: 'completed', completedAt: Date.parse('2026-05-20'),
     });
     // No PII beyond customer name leaks into the normalized record.
     expect(Object.keys(r)).not.toContain('customerPhone');

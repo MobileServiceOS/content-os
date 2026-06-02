@@ -13,6 +13,8 @@ import {
   revenueOpportunity, recommendedContent, money,
 } from '../../lib/director/msosWidgets';
 import { revenueInsight, type RevenueInsight } from '../../lib/director/insight';
+import { ownerSummary, todaysPriorities } from '../../lib/director/ownerExecutive';
+import type { VerticalConfig } from '../../lib/verticals';
 import type { JobRecord } from '../../lib/director/types';
 import { RankTable, SectionTitle, accentAt } from './shared';
 import TrendChart from '../analytics/TrendChart';
@@ -36,6 +38,52 @@ function InsightCard({ title, accent, insight }: { title: string; accent: string
       <span className="muted" style={{ fontSize: '0.8rem' }}>Why: {insight.why}</span>
       <span style={{ fontSize: '0.84rem' }}>→ {insight.action}</span>
       <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)', fontSize: '0.7rem', alignSelf: 'flex-start' }}>{insight.impactLabel}</span>
+    </div>
+  );
+}
+
+function Best({ label, value, accent }: { label: string; value: string; accent: string }) {
+  return (
+    <div className="card" style={{ padding: 12, ['--accent' as string]: accent }}>
+      <div className="muted" style={{ fontSize: '0.72rem' }}>{label}</div>
+      <div style={{ fontSize: '1rem', fontWeight: 700 }}>{value}</div>
+    </div>
+  );
+}
+
+// Phase 7 — Owner Executive Dashboard: headline KPIs + Today's Priorities, live.
+function OwnerExecutive({ jobs, vertical }: { jobs: JobRecord[]; vertical: VerticalConfig }) {
+  const s = ownerSummary(jobs, Date.now());
+  const priorities = todaysPriorities(jobs, vertical);
+  const g = s.growthPct;
+  return (
+    <div className="card stack" style={{ gap: 12 }}>
+      <SectionTitle accent="var(--c-violet)">Owner Executive Dashboard</SectionTitle>
+      <div className="grid grid-3">
+        <Tile label="Revenue" value={money(s.revenue)} accent="var(--c-emerald)" />
+        <Tile label={s.profitKnown ? 'Profit' : 'Profit'} value={s.profitKnown ? money(s.profit) : '—'} accent="var(--c-blue)"
+          sub={s.profitKnown && s.marginPct != null ? `${Math.round(s.marginPct * 100)}% margin` : 'cost not recorded'} />
+        <Tile label="Jobs" value={String(s.jobs)} accent="var(--c-cyan)" />
+        <Tile label="Avg ticket" value={money(s.avgTicket)} accent="var(--c-amber)" />
+        <Tile label="Growth (mo/mo)" value={g != null ? `${g >= 0 ? '+' : ''}${Math.round(g * 100)}%` : '—'}
+          accent={g != null && g < 0 ? 'var(--danger)' : 'var(--success)'} sub={g == null ? 'no prior-month data' : undefined} />
+      </div>
+      <div className="grid grid-3">
+        <Best label="Best city" value={s.bestCity ?? '—'} accent="var(--c-blue)" />
+        <Best label="Best service" value={s.bestService ?? '—'} accent="var(--c-emerald)" />
+        <Best label="Best technician" value={s.bestTechnician ?? '—'} accent="var(--c-pink)" />
+      </div>
+      <div>
+        <div className="muted" style={{ fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Today's Priorities</div>
+        <ol style={{ margin: 0, paddingLeft: 20 }}>
+          {priorities.map((p, i) => (
+            <li key={i} style={{ fontSize: '0.86rem', marginBottom: 6 }}>
+              {p.text}
+              {p.to && <Link className="btn btn-sm" to={p.to} style={{ marginLeft: 8, padding: '2px 8px', minHeight: 0 }}>Go →</Link>}
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   );
 }
@@ -206,6 +254,9 @@ export function JobsIntel() {
   return (
     <div className="stack" style={{ gap: 16 }}>
       {header}
+
+      {/* Phase 7 — Owner Executive Dashboard (live) */}
+      <OwnerExecutive jobs={jobs} vertical={vertical} />
 
       {/* Time-window revenue */}
       <div className="grid grid-3">

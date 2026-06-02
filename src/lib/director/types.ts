@@ -24,6 +24,8 @@ export interface JobRecord {
   tireSize: string;
   customer: string;
   ticketUsd: number;
+  /** Job cost (parts/material/etc.) when MSOS records it; enables profit. Optional. */
+  costUsd?: number;
   status: JobStatus;
   completedAt: number; // epoch ms (job date)
 }

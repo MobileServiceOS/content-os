@@ -142,6 +142,7 @@ function buildJob(i: number, r: () => number): JobRecord {
     tireSize: pick(r, TIRE_SIZES),
     customer: pick(r, CUSTOMERS),
     ticketUsd: Math.round(ticket),
+    costUsd: Math.round(ticket * (0.45 + r() * 0.2)), // ~45–65% cost → realistic margin
     status: 'completed',
     completedAt: SAMPLE_NOW - between(r, 0, 29) * DAY,
   };

@@ -52,6 +52,7 @@ export function normalizeJob(raw: Record<string, unknown>, id: string, nameByUid
     tireSize: str(raw.tireSize),
     customer: str(raw.customerName),
     ticketUsd: toNum(raw.revenue),
+    costUsd: toNum(raw.tireCost) + toNum(raw.materialCost) + toNum(raw.miscCost) + toNum(raw.partsCost) + toNum(raw.diagnosticFee),
     status: toStatus(raw.status),
     completedAt: toEpoch(raw),
   };
