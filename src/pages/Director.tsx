@@ -11,15 +11,17 @@ import { ViralEngine } from '../components/director/viralSections';
 import { ReviewIntel } from '../components/director/reviewSections';
 import { AvatarStudio } from '../components/director/avatarSections';
 import { SeoConsole } from '../components/director/seoSections';
+import { GbpIntelligence } from '../components/director/gbpSections';
 import { AutomationCenter } from '../components/director/automationSections';
 
-type Key = 'overview' | 'viral' | 'reviewintel' | 'seo' | 'avatar' | 'automation';
+type Key = 'overview' | 'viral' | 'reviewintel' | 'seo' | 'gbp' | 'avatar' | 'automation';
 
 const TABS: { key: Key; label: string; icon: string; render: () => ReactNode }[] = [
   { key: 'overview', label: 'Revenue Intel (MSOS)', icon: '💵', render: () => <JobsIntel /> },
   { key: 'viral', label: 'Viral Engine', icon: '🔥', render: () => <ViralEngine /> },
   { key: 'reviewintel', label: 'Review Intel', icon: '💬', render: () => <ReviewIntel /> },
   { key: 'seo', label: 'SEO (Search Console)', icon: '🔎', render: () => <SeoConsole /> },
+  { key: 'gbp', label: 'GBP Intelligence', icon: '📍', render: () => <GbpIntelligence /> },
   { key: 'avatar', label: 'Avatar Studio', icon: '🎭', render: () => <AvatarStudio /> },
   { key: 'automation', label: 'Automation', icon: '🤖', render: () => <AutomationCenter /> },
 ];

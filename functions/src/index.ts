@@ -17,6 +17,7 @@ import {
   buildAuthUrl, signState, verifyState, completeOAuth,
   syncSearchConsole, disconnectSearchConsole, setStatus, APP_RETURN,
 } from './searchConsole';
+import * as gbp from './gbp';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -166,5 +167,52 @@ export const scDisconnect = onCall(async (request) => {
   if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
   await assertMember(request, data.businessId);
   await disconnectSearchConsole(data.businessId);
+  return { ok: true };
+});
+
+// --- Google Business Profile (read-only; reuses the SC OAuth client) ---
+const gbpSecrets = [SC_OAUTH_CLIENT_ID, SC_OAUTH_CLIENT_SECRET];
+
+export const gbpAuthUrl = onCall({ secrets: gbpSecrets }, async (request) => {
+  const data = request.data as { businessId?: string };
+  if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
+  await assertMember(request, data.businessId);
+  const state = gbp.signState(data.businessId, SC_OAUTH_CLIENT_SECRET.value());
+  return { url: gbp.buildAuthUrl(SC_OAUTH_CLIENT_ID.value(), state) };
+});
+
+export const gbpOAuthCallback = onRequest({ secrets: gbpSecrets }, async (req, res) => {
+  const code = String(req.query.code ?? '');
+  const state = String(req.query.state ?? '');
+  const oauthErr = String(req.query.error ?? '');
+  const back = (status: string) => res.redirect(`${gbp.APP_RETURN}?gbp=${status}`);
+  if (oauthErr) { back('error'); return; }
+  const bid = gbp.verifyState(state, SC_OAUTH_CLIENT_SECRET.value());
+  if (!bid || !code) { back('error'); return; }
+  try {
+    await gbp.completeOAuth(bid, SC_OAUTH_CLIENT_ID.value(), SC_OAUTH_CLIENT_SECRET.value(), code);
+    back('connected');
+  } catch {
+    await gbp.setStatus(bid, { status: 'error', error: 'OAuth exchange failed.' });
+    back('error');
+  }
+});
+
+export const gbpSync = onCall({ secrets: gbpSecrets }, async (request) => {
+  const data = request.data as { businessId?: string };
+  if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
+  await assertMember(request, data.businessId);
+  try {
+    return await gbp.syncGbp(data.businessId, SC_OAUTH_CLIENT_ID.value(), SC_OAUTH_CLIENT_SECRET.value());
+  } catch (err) {
+    throw new HttpsError('internal', err instanceof Error ? err.message : 'GBP sync failed.');
+  }
+});
+
+export const gbpDisconnect = onCall(async (request) => {
+  const data = request.data as { businessId?: string };
+  if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
+  await assertMember(request, data.businessId);
+  await gbp.disconnectGbp(data.businessId);
   return { ok: true };
 });

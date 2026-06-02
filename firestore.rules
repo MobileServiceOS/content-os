@@ -193,6 +193,13 @@ service cloud.firestore {
         allow read: if isMember(bid);
         allow write: if false;
       }
+
+      // Synced Google Business Profile data + connection status (no tokens here;
+      // the GBP token lives under the locked private/ match above).
+      match /gbp/{doc} {
+        allow read: if isMember(bid);
+        allow write: if false;
+      }
     }
 
     // Default deny everything else.
