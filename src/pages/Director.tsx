@@ -13,12 +13,14 @@ import { AvatarStudio } from '../components/director/avatarSections';
 import { SeoConsole } from '../components/director/seoSections';
 import { GbpIntelligence } from '../components/director/gbpSections';
 import { TikTokIntelligence } from '../components/director/tiktokSections';
+import { ViralIntelligence } from '../components/director/viralIntelSections';
 import { AutomationCenter } from '../components/director/automationSections';
 
-type Key = 'overview' | 'viral' | 'reviewintel' | 'seo' | 'gbp' | 'tiktok' | 'avatar' | 'automation';
+type Key = 'overview' | 'viralintel' | 'viral' | 'reviewintel' | 'seo' | 'gbp' | 'tiktok' | 'avatar' | 'automation';
 
 const TABS: { key: Key; label: string; icon: string; render: () => ReactNode }[] = [
   { key: 'overview', label: 'Revenue Intel (MSOS)', icon: '💵', render: () => <JobsIntel /> },
+  { key: 'viralintel', label: 'Viral Intelligence', icon: '🧠', render: () => <ViralIntelligence /> },
   { key: 'viral', label: 'Viral Engine', icon: '🔥', render: () => <ViralEngine /> },
   { key: 'reviewintel', label: 'Review Intel', icon: '💬', render: () => <ReviewIntel /> },
   { key: 'seo', label: 'SEO (Search Console)', icon: '🔎', render: () => <SeoConsole /> },
