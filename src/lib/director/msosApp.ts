@@ -40,8 +40,15 @@ export async function onMsosAuth(cb: (user: User | null) => void): Promise<() =>
   return onAuthStateChanged(await msosAuth(), cb);
 }
 
-/** Open a Google popup to sign in to the MSOS project (read-only use). */
-export async function connectMsos(): Promise<User> {
+/** Email + password sign-in to the MSOS project (primary, read-only use). */
+export async function connectMsosEmail(email: string, password: string): Promise<User> {
+  const { signInWithEmailAndPassword } = await import('firebase/auth');
+  const cred = await signInWithEmailAndPassword(await msosAuth(), email.trim(), password);
+  return cred.user;
+}
+
+/** OPTIONAL Google popup sign-in to the MSOS project (read-only use). */
+export async function connectMsosGoogle(): Promise<User> {
   const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
   const cred = await signInWithPopup(await msosAuth(), new GoogleAuthProvider());
   return cred.user;

@@ -3,7 +3,7 @@
 // Director reads ONLY the selected business. No service account, no mock data,
 // no hardcoded business. States: loading -> needsConnect | (connected + jobs).
 import { useCallback, useEffect, useState } from 'react';
-import { onMsosAuth, connectMsos, disconnectMsos } from '../lib/director/msosApp';
+import { onMsosAuth, connectMsosEmail, connectMsosGoogle, disconnectMsos } from '../lib/director/msosApp';
 import { listMsosBusinesses, fetchMsosJobs, pickDefaultBusiness, type MsosBusiness } from '../lib/director/msosReader';
 import type { JobRecord } from '../lib/director/types';
 
@@ -20,7 +20,8 @@ export interface UseMsosJobs {
   businesses: MsosBusiness[];
   selectedBusinessId: string | null;
   selectBusiness: (id: string) => void;
-  connect: () => Promise<void>;
+  connectEmail: (email: string, password: string) => Promise<void>;
+  connectGoogle: () => Promise<void>;
   disconnect: () => Promise<void>;
   reload: () => void;
 }
@@ -88,12 +89,30 @@ export function useMsosJobs(): UseMsosJobs {
     setSelectedBusinessId(id);
   }, []);
 
-  const connect = useCallback(async () => {
+  const friendly = (err: unknown): string => {
+    const code = (err as { code?: string })?.code ?? '';
+    if (code.includes('wrong-password') || code.includes('invalid-credential')) return 'Incorrect email or password.';
+    if (code.includes('user-not-found')) return 'No MSOS account for that email.';
+    if (code.includes('too-many-requests')) return 'Too many attempts — try again shortly.';
+    if (code.includes('popup-closed') || code.includes('cancelled')) return 'Sign-in cancelled.';
+    return (err as Error)?.message ?? 'Sign-in failed.';
+  };
+
+  const connectEmail = useCallback(async (email: string, password: string) => {
     setError(null);
     try {
-      await connectMsos();
+      await connectMsosEmail(email, password); // onMsosAuth fires -> auto-reads
     } catch (err) {
-      setError((err as Error)?.message ?? 'Sign-in cancelled.');
+      setError(friendly(err));
+    }
+  }, []);
+
+  const connectGoogle = useCallback(async () => {
+    setError(null);
+    try {
+      await connectMsosGoogle();
+    } catch (err) {
+      setError(friendly(err));
     }
   }, []);
 
@@ -118,7 +137,8 @@ export function useMsosJobs(): UseMsosJobs {
     businesses,
     selectedBusinessId,
     selectBusiness,
-    connect,
+    connectEmail,
+    connectGoogle,
     disconnect,
     reload,
   };

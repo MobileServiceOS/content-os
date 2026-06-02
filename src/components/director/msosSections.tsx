@@ -1,6 +1,7 @@
 // "Revenue Intel" — the MSOS-jobs Director surface. Renders the 10 widgets over
 // REAL jobs read from MSOS (read-only). Never shows mock data: while loading,
 // not-configured, or errored it shows an explicit state instead of numbers.
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMsosJobs } from '../../hooks/useMsosJobs';
 import { compact } from '../../lib/analytics/format';
@@ -65,18 +66,51 @@ function HeatMap({ jobs }: { jobs: JobRecord[] }) {
   );
 }
 
-function ConnectState({ onConnect, error }: { onConnect: () => void; error: string | null }) {
+function ConnectState({
+  onConnectEmail, onConnectGoogle, error,
+}: {
+  onConnectEmail: (email: string, password: string) => Promise<void>;
+  onConnectGoogle: () => Promise<void>;
+  error: string | null;
+}) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setBusy(true);
+    try { await onConnectEmail(email, password); } finally { setBusy(false); }
+  };
+
   return (
-    <div className="card stack">
+    <div className="card stack" style={{ maxWidth: 420 }}>
       <SectionTitle accent="var(--warning)">Connect MSOS (read-only)</SectionTitle>
-      <p className="muted" style={{ margin: 0, fontSize: '0.86rem' }}>
-        Sign in with the Google account you use for Mobile Service OS. The Director reads your jobs
-        <strong> directly</strong> from the live <code>mobile-service-os</code> data as you — governed by MSOS's own
-        security rules. No copy is made, and it can never write to MSOS. No sample data is shown here.
+      <p className="muted" style={{ margin: 0, fontSize: '0.84rem' }}>
+        Sign in to Mobile Service OS to read your jobs <strong>directly</strong> from the live
+        <code> mobile-service-os</code> data as you — governed by MSOS's own security rules. No copy is made,
+        it can never write to MSOS, and once connected it stays connected (no need to sign in again).
       </p>
-      <button className="btn btn-primary" onClick={onConnect} style={{ alignSelf: 'flex-start' }}>
-        Connect MSOS account →
-      </button>
+      <form className="stack" style={{ gap: 10 }} onSubmit={(e) => void submit(e)}>
+        <label className="field" style={{ margin: 0 }}>
+          <span>MSOS email</span>
+          <input className="input" type="email" autoComplete="username" value={email}
+            onChange={(e) => setEmail(e.target.value)} placeholder="you@business.com" />
+        </label>
+        <label className="field" style={{ margin: 0 }}>
+          <span>Password</span>
+          <input className="input" type="password" autoComplete="current-password" value={password}
+            onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        </label>
+        <button className="btn btn-primary" type="submit" disabled={busy || !email || !password} style={{ alignSelf: 'flex-start' }}>
+          {busy ? 'Signing in…' : 'Sign in to MSOS'}
+        </button>
+      </form>
+      <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+        <span className="muted" style={{ fontSize: '0.74rem' }}>or</span>
+        <button className="btn btn-sm" onClick={() => void onConnectGoogle()}>Continue with Google</button>
+      </div>
       {error && <p className="muted" style={{ margin: 0, fontSize: '0.78rem', color: 'var(--danger)' }}>{error}</p>}
     </div>
   );
@@ -85,10 +119,10 @@ function ConnectState({ onConnect, error }: { onConnect: () => void; error: stri
 export function JobsIntel() {
   const {
     jobs, loading, needsConnect, error, readAt, account,
-    businesses, selectedBusinessId, selectBusiness, connect, disconnect, reload,
+    businesses, selectedBusinessId, selectBusiness, connectEmail, connectGoogle, disconnect, reload,
   } = useMsosJobs();
 
-  if (needsConnect) return <ConnectState onConnect={() => void connect()} error={error} />;
+  if (needsConnect) return <ConnectState onConnectEmail={connectEmail} onConnectGoogle={connectGoogle} error={error} />;
 
   const selected = businesses.find((b) => b.id === selectedBusinessId);
   const header = (
