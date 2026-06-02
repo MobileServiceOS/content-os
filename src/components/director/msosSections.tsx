@@ -65,38 +65,42 @@ function HeatMap({ jobs }: { jobs: JobRecord[] }) {
   );
 }
 
-function ConnectState() {
+function ConnectState({ onConnect, error }: { onConnect: () => void; error: string | null }) {
   return (
     <div className="card stack">
       <SectionTitle accent="var(--warning)">Connect MSOS (read-only)</SectionTitle>
       <p className="muted" style={{ margin: 0, fontSize: '0.86rem' }}>
-        No data is shown until the read-only MSOS connection is set up — this surface never displays sample data.
-        It reads jobs from the <code>mobile-service-os</code> project via a read-only service account and never writes to MSOS.
+        Sign in with the Google account you use for Mobile Service OS. The Director reads your jobs
+        <strong> directly</strong> from the live <code>mobile-service-os</code> data as you — governed by MSOS's own
+        security rules. No copy is made, and it can never write to MSOS. No sample data is shown here.
       </p>
-      <p className="muted" style={{ margin: 0, fontSize: '0.82rem' }}>
-        To enable: set the <code>MSOS_SERVICE_ACCOUNT</code> and <code>MSOS_BUSINESS_ID</code> function secrets, then deploy
-        the <code>getMsosJobs</code> function. (See the deploy notes.)
-      </p>
+      <button className="btn btn-primary" onClick={onConnect} style={{ alignSelf: 'flex-start' }}>
+        Connect MSOS account →
+      </button>
+      {error && <p className="muted" style={{ margin: 0, fontSize: '0.78rem', color: 'var(--danger)' }}>{error}</p>}
     </div>
   );
 }
 
 export function JobsIntel() {
-  const { jobs, loading, connected, notConfigured, error, readAt, reload } = useMsosJobs();
+  const { jobs, loading, needsConnect, connected, error, readAt, account, connect, disconnect, reload } = useMsosJobs();
 
+  if (needsConnect) return <ConnectState onConnect={() => void connect()} error={error} />;
   if (loading) return <div className="card"><p className="muted" style={{ margin: 0 }}>Reading MSOS jobs…</p></div>;
-  if (notConfigured) return <ConnectState />;
   if (error) {
     return (
       <div className="card stack">
         <SectionTitle accent="var(--danger)">Couldn't read MSOS</SectionTitle>
         <p className="muted" style={{ margin: 0, fontSize: '0.84rem' }}>{error}</p>
-        <button className="btn btn-sm" onClick={reload} style={{ alignSelf: 'flex-start' }}>Retry</button>
+        <div className="row" style={{ gap: 8 }}>
+          <button className="btn btn-sm" onClick={reload}>Retry</button>
+          <button className="btn btn-sm" onClick={() => void disconnect()}>Switch account</button>
+        </div>
       </div>
     );
   }
   if (connected && jobs.length === 0) {
-    return <div className="card"><p className="muted" style={{ margin: 0 }}>Connected to MSOS — no jobs found for this business yet.</p></div>;
+    return <div className="card"><p className="muted" style={{ margin: 0 }}>Connected to MSOS{account ? ` as ${account}` : ''} — no jobs found for this business yet.</p></div>;
   }
 
   const k = jobsKpis(jobs);
@@ -107,9 +111,12 @@ export function JobsIntel() {
     <div className="stack" style={{ gap: 16 }}>
       <div className="row between" style={{ flexWrap: 'wrap', gap: 8 }}>
         <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)', fontSize: '0.7rem' }}>
-          ● Live MSOS data · read-only{readAt ? ` · synced ${new Date(readAt).toLocaleTimeString()}` : ''}
+          ● Live MSOS data · read-only{account ? ` · ${account}` : ''}{readAt ? ` · synced ${new Date(readAt).toLocaleTimeString()}` : ''}
         </span>
-        <button className="btn btn-sm" onClick={reload}>Refresh</button>
+        <div className="row" style={{ gap: 8 }}>
+          <button className="btn btn-sm" onClick={reload}>Refresh</button>
+          <button className="btn btn-sm" onClick={() => void disconnect()}>Disconnect</button>
+        </div>
       </div>
 
       {/* KPIs */}

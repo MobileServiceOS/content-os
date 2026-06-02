@@ -1,5 +1,9 @@
 # MSOS → Marketing Director: Read-Only Architecture Audit
 
+> **Decision (2026-06-02): Option B — client-side, your identity — was chosen and
+> implemented.** No service account, no credentials. See `docs/MSOS-CONNECTION.md`.
+> The service-account function from the earlier draft was removed.
+
 Audit performed **before** provisioning any credentials. Two separate Firebase
 projects: Content OS = `content-os-wheelrush`, MSOS = `mobile-service-os`.
 

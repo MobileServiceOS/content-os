@@ -1,58 +1,51 @@
-# Connecting the Marketing Director to MSOS Jobs (READ-ONLY)
+# Connecting the Marketing Director to MSOS Jobs (READ-ONLY, Option B)
 
 The "Revenue Intel (MSOS)" Director tab reads jobs from the **separate**
-`mobile-service-os` Firebase project. It is **read-only by construction** and
-**never modifies MSOS** (no job creation, inventory, pricing, or invoice writes).
+`mobile-service-os` Firebase project, **directly from the live data**, as the
+signed-in user. Chosen mechanism: **Option B (client-side, your identity)** — see
+`docs/MSOS-ARCH-AUDIT.md`.
 
-Two layers guarantee read-only:
-1. The `getMsosJobs` Cloud Function only ever calls Firestore `.get()`.
-2. The service account it uses is granted **Datastore Viewer only**, so it is
-   physically incapable of writing to MSOS.
+## How it works
+- The Content OS browser initializes a **second Firebase app** pointed at
+  `mobile-service-os` (public web config — not a secret).
+- You **sign in with the same Google account** you use for MSOS (an in-app
+  "Connect MSOS account" button → Google popup). This creates a separate,
+  read-only MSOS session in the browser.
+- It resolves your business id from `users/{uid}` and reads
+  `businesses/{businessId}/jobs` + `members`, **governed entirely by MSOS's own
+  Firestore security rules** (`isMemberOfBusiness`).
+- **No service account, no key to leak, no write paths.** Nothing is copied into
+  Content OS — jobs are read into memory for the current view only (no duplicate
+  database, no duplicate records). The tab shows a Connect button until you sign
+  in; it never shows sample/mock data.
 
-The Director only ever shows **real** MSOS data here — until this is configured,
-the tab shows a "Connect MSOS" state (never sample/mock numbers).
+## One-time setup (no credentials)
+The only requirement is letting the Content OS origin complete the Google popup
+against the MSOS project's auth:
 
-## What the connection reads
-`businesses/{MSOS_BUSINESS_ID}/jobs` → normalized to `JobRecord`
-(service, city, vehicle, technician [resolved from `members`], tireSize,
-customer, revenue, status, date). Plus `businesses/{id}/members` for tech names.
+1. Firebase Console → project **`mobile-service-os`** → **Authentication** →
+   **Settings** → **Authorized domains** → add:
+   - `mobileserviceos.github.io` (production)
+   - `localhost` (local dev — usually present already)
+   This is an Auth setting only — it does **not** touch jobs, inventory, pricing,
+   invoices, or any data, and grants **no write access**.
+2. Make sure **Google** is an enabled sign-in provider on `mobile-service-os`
+   (it already is — MSOS signs in with Google).
 
-## One-time setup (you run these — the key never goes in chat)
+That's it. Deploy the Content OS frontend (push `main`), open the Director →
+**Revenue Intel (MSOS)** tab → **Connect MSOS account** → sign in → the 10
+widgets render off your live jobs. **Disconnect** signs out of the MSOS session
+only (your Content OS login is untouched).
 
-**1. Create a read-only service account in the `mobile-service-os` project**
-- GCP Console → project `mobile-service-os` → IAM & Admin → Service Accounts → Create.
-- Name e.g. `content-os-jobs-reader`.
-- Grant it role **`Cloud Datastore Viewer`** (read-only). Nothing else.
-- Create a JSON key and download it (e.g. to `~/Desktop/msos-reader.json`).
-  Treat this file as a secret — do not paste its contents anywhere.
+## Optional overrides (env, all public/non-secret)
+`VITE_MSOS_API_KEY`, `VITE_MSOS_AUTH_DOMAIN`, `VITE_MSOS_PROJECT_ID`,
+`VITE_MSOS_STORAGE_BUCKET`, `VITE_MSOS_MESSAGING_SENDER_ID`, `VITE_MSOS_APP_ID`,
+and `VITE_MSOS_BUSINESS_ID` (force a specific business id instead of resolving
+from `users/{uid}`). Defaults are baked in, so none are required.
 
-**2. Find the Wheel Rush MSOS business id**
-- Firebase Console → `mobile-service-os` → Firestore → `businesses` → the Wheel
-  Rush document. Its **document id** is `MSOS_BUSINESS_ID` (often the owner uid).
-
-**3. Set the Content OS function secrets** (run in the Content OS repo; project `content-os-wheelrush`)
-```bash
-# service-account key from the file (keeps the key out of your shell history/chat)
-firebase functions:secrets:set MSOS_SERVICE_ACCOUNT --data-file ~/Desktop/msos-reader.json
-# the MSOS business id (paste the id when prompted)
-firebase functions:secrets:set MSOS_BUSINESS_ID
-# then delete the local key file
-rm ~/Desktop/msos-reader.json
-```
-
-**4. Deploy just the new function**
-```bash
-firebase deploy --only functions:getMsosJobs
-```
-
-**5. Deploy the frontend** (the Revenue Intel tab): push `main` (GitHub Actions),
-or it ships with the next deploy.
-
-After that, open the Director → **Revenue Intel (MSOS)** tab. It will read live
-jobs and render all 10 widgets. Use **Refresh** to re-pull.
-
-## If you'd rather I run steps 3–5
-Drop the key at `~/Desktop/msos-reader.json` and tell me the MSOS business id via
-a safe channel, and I'll set the secrets (via `--data-file`, never echoing the
-key), deploy `getMsosJobs`, deploy the frontend, and verify with a real-data
-screenshot. I will delete the key file afterward.
+## Read-only guarantees
+1. The code only calls `getDoc`/`getDocs` — never `setDoc`/`updateDoc`/`deleteDoc`.
+2. Reads run under **MSOS's security rules** as your user — you can only read what
+   MSOS already lets you read, and the rules also gate writes (which we never attempt).
+3. No service-account key exists, so there's no broad-database credential to leak
+   (the risk R1/R2 from the audit is eliminated by this approach).

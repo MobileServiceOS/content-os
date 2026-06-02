@@ -1,43 +1,61 @@
-// Live read of MSOS jobs for the Marketing Director. No mock fallback: either
-// real jobs load, the connection isn't configured yet ('not-configured'), or an
-// error surfaces. The UI renders a "Connect MSOS" state for not-configured.
+// Live, READ-ONLY read of MSOS jobs as the signed-in MSOS user (Option B:
+// client-side, your identity). No service account, no mock data. States:
+//  - loading: resolving the MSOS auth session
+//  - needsConnect: no MSOS session yet -> show a Connect button
+//  - connected: jobs loaded (possibly empty)
+//  - error: read failed
 import { useCallback, useEffect, useState } from 'react';
-import { useBusiness } from '../context/BusinessContext';
-import { fetchMsosJobs, MSOS_NOT_CONFIGURED } from '../lib/director/msosClient';
+import { onMsosAuth, connectMsos, disconnectMsos } from '../lib/director/msosApp';
+import { fetchMsosJobs } from '../lib/director/msosReader';
 import type { JobRecord } from '../lib/director/types';
 
 export interface UseMsosJobs {
   jobs: JobRecord[];
   loading: boolean;
-  connected: boolean; // a successful read returned (even if zero jobs)
-  notConfigured: boolean; // secrets not set on the function yet
+  needsConnect: boolean;
+  connected: boolean;
   error: string | null;
   readAt: number | null;
+  account: string | null; // signed-in MSOS email, for display
+  connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
   reload: () => void;
 }
 
 export function useMsosJobs(): UseMsosJobs {
-  const { businessId } = useBusiness();
+  const [uid, setUid] = useState<string | null>(null);
+  const [account, setAccount] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [jobs, setJobs] = useState<JobRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
-  const [notConfigured, setNotConfigured] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [readAt, setReadAt] = useState<number | null>(null);
   const [nonce, setNonce] = useState(0);
 
-  const reload = useCallback(() => setNonce((n) => n + 1), []);
-
+  // Track the MSOS auth session (separate from Content OS).
   useEffect(() => {
-    if (!businessId) {
+    let unsub = () => {};
+    onMsosAuth((user) => {
+      setUid(user?.uid ?? null);
+      setAccount(user?.email ?? null);
+      setAuthReady(true);
+    }).then((u) => { unsub = u; });
+    return () => unsub();
+  }, []);
+
+  // Once we know the session, read jobs (or fall to needsConnect).
+  useEffect(() => {
+    if (!authReady) return;
+    if (!uid) {
       setLoading(false);
+      setConnected(false);
       return;
     }
     let cancelled = false;
     setLoading(true);
     setError(null);
-    setNotConfigured(false);
-    fetchMsosJobs(businessId)
+    fetchMsosJobs(uid)
       .then((res) => {
         if (cancelled) return;
         setJobs(res.jobs);
@@ -47,16 +65,40 @@ export function useMsosJobs(): UseMsosJobs {
       .catch((err: Error) => {
         if (cancelled) return;
         setConnected(false);
-        if (err.message === MSOS_NOT_CONFIGURED) setNotConfigured(true);
-        else setError(err.message);
+        setError(err?.message ?? 'Failed to read MSOS jobs.');
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [businessId, nonce]);
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [authReady, uid, nonce]);
 
-  return { jobs, loading, connected, notConfigured, error, readAt, reload };
+  const connect = useCallback(async () => {
+    setError(null);
+    try {
+      await connectMsos(); // Google popup; onMsosAuth fires -> triggers read
+    } catch (err) {
+      setError((err as Error)?.message ?? 'Sign-in cancelled.');
+    }
+  }, []);
+
+  const disconnect = useCallback(async () => {
+    await disconnectMsos();
+    setJobs([]);
+    setConnected(false);
+    setReadAt(null);
+  }, []);
+
+  const reload = useCallback(() => setNonce((n) => n + 1), []);
+
+  return {
+    jobs,
+    loading: loading && (!authReady || !!uid),
+    needsConnect: authReady && !uid,
+    connected,
+    error,
+    readAt,
+    account,
+    connect,
+    disconnect,
+    reload,
+  };
 }
