@@ -3,7 +3,7 @@
 // - `generateImage`: image generation via OpenAI Images.
 // Both verify Firebase Auth + tenant membership. Provider keys live only here
 // (Functions secrets) — never in the browser.
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
 import { initializeApp } from 'firebase-admin/app';
 import { assertMember } from './auth';
@@ -13,6 +13,10 @@ import { callOpenAI } from './openai';
 import { callGemini } from './gemini';
 import { generateImageOpenAI } from './openaiImage';
 import { generateVideoBroker } from './video';
+import {
+  buildAuthUrl, signState, verifyState, completeOAuth,
+  syncSearchConsole, disconnectSearchConsole, setStatus, APP_RETURN,
+} from './searchConsole';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -21,6 +25,11 @@ const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY');
 const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 const HIGGSFIELD_CREDENTIALS = defineSecret('HIGGSFIELD_CREDENTIALS');
+// Google Search Console OAuth (read-only). Set via `firebase functions:secrets:set`.
+const SC_OAUTH_CLIENT_ID = defineSecret('SC_OAUTH_CLIENT_ID');
+const SC_OAUTH_CLIENT_SECRET = defineSecret('SC_OAUTH_CLIENT_SECRET');
+const SC_REDIRECT_URI = defineSecret('SC_REDIRECT_URI');
+const scSecrets = [SC_OAUTH_CLIENT_ID, SC_OAUTH_CLIENT_SECRET, SC_REDIRECT_URI];
 
 const KINDS: GenKind[] = ['content', 'script', 'review', 'social', 'repurpose', 'gbp', 'seo', 'photo', 'lead', 'missed_call', 'review_template', 'task'];
 const PROVIDERS: LlmProvider[] = ['claude', 'openai', 'gemini'];
@@ -108,4 +117,54 @@ export const generateVideo = onCall({ secrets: [HIGGSFIELD_CREDENTIALS], timeout
   } catch (err) {
     throw new HttpsError('internal', err instanceof Error ? err.message : 'Video generation failed.');
   }
+});
+
+// --- Google Search Console (read-only OAuth) ---
+
+/** Returns the Google OAuth consent URL (state = signed businessId). */
+export const scAuthUrl = onCall({ secrets: scSecrets }, async (request) => {
+  const data = request.data as { businessId?: string };
+  if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
+  await assertMember(request, data.businessId);
+  const state = signState(data.businessId, SC_OAUTH_CLIENT_SECRET.value());
+  return { url: buildAuthUrl(SC_OAUTH_CLIENT_ID.value(), SC_REDIRECT_URI.value(), state) };
+});
+
+/** OAuth redirect target: exchanges the code server-side, stores the token. */
+export const scOAuthCallback = onRequest({ secrets: scSecrets }, async (req, res) => {
+  const code = String(req.query.code ?? '');
+  const state = String(req.query.state ?? '');
+  const oauthErr = String(req.query.error ?? '');
+  const back = (status: string) => res.redirect(`${APP_RETURN}?sc=${status}`);
+  if (oauthErr) { back('error'); return; }
+  const bid = verifyState(state, SC_OAUTH_CLIENT_SECRET.value());
+  if (!bid || !code) { back('error'); return; }
+  try {
+    await completeOAuth(bid, SC_OAUTH_CLIENT_ID.value(), SC_OAUTH_CLIENT_SECRET.value(), code, SC_REDIRECT_URI.value());
+    back('connected');
+  } catch {
+    await setStatus(bid, { status: 'error', error: 'OAuth exchange failed.' });
+    back('error');
+  }
+});
+
+/** Pull the latest Search Console metrics into the owner-readable doc. */
+export const scSync = onCall({ secrets: scSecrets }, async (request) => {
+  const data = request.data as { businessId?: string };
+  if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
+  await assertMember(request, data.businessId);
+  try {
+    return await syncSearchConsole(data.businessId, SC_OAUTH_CLIENT_ID.value(), SC_OAUTH_CLIENT_SECRET.value());
+  } catch (err) {
+    throw new HttpsError('internal', err instanceof Error ? err.message : 'Search Console sync failed.');
+  }
+});
+
+/** Revoke the token at Google and clear the connection. */
+export const scDisconnect = onCall(async (request) => {
+  const data = request.data as { businessId?: string };
+  if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
+  await assertMember(request, data.businessId);
+  await disconnectSearchConsole(data.businessId);
+  return { ok: true };
 });

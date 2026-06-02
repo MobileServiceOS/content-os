@@ -179,6 +179,20 @@ service cloud.firestore {
           allow update, delete: if false;
         }
       }
+
+      // --- Integrations (Phase 3+) ---
+      // OAuth refresh tokens — LOCKED to all clients; only the Admin SDK
+      // (Cloud Functions) reads/writes these. The browser never sees a token.
+      match /private/{doc} {
+        allow read, write: if false;
+      }
+
+      // Synced Search Console data + connection status (no tokens here).
+      // Members read; only Cloud Functions (Admin SDK) write.
+      match /searchConsole/{doc} {
+        allow read: if isMember(bid);
+        allow write: if false;
+      }
     }
 
     // Default deny everything else.
