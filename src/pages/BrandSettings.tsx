@@ -119,6 +119,33 @@ export default function BrandSettings() {
             { value: 'openai', label: 'OpenAI Images (needs OPENAI_API_KEY)' },
           ]}
         />
+        <SelectField
+          label="Video provider"
+          value={draft.videoProvider ?? 'mock'}
+          onChange={(v) => set({ videoProvider: v as Brand['videoProvider'] })}
+          options={[
+            { value: 'mock', label: 'Placeholder poster (default)' },
+            { value: 'higgsfield', label: 'Higgsfield (needs HIGGSFIELD_CREDENTIALS)' },
+          ]}
+        />
+      </div>
+
+      <div className="card stack" style={{ marginTop: 16 }}>
+        <h2 style={{ margin: 0 }}>Learning engine</h2>
+        <label className="row" style={{ gap: 8, cursor: editable ? 'pointer' : 'default' }}>
+          <input
+            type="checkbox"
+            disabled={!editable}
+            checked={draft.learningEnabled ?? false}
+            onChange={(e) => set({ learningEnabled: e.target.checked })}
+          />
+          <span>Let top-performing styles bias future generation</span>
+        </label>
+        <p className="muted" style={{ margin: 0, fontSize: '0.72rem' }}>
+          When on, hook and caption styles that beat your average (across at least 3 posts) are
+          favored in generation — without ever locking out variety. See the live recommendations on
+          the <a href="#/director">Marketing Director</a> page. Off by default.
+        </p>
       </div>
 
       <div className="card stack" style={{ marginTop: 16 }}>

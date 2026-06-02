@@ -33,8 +33,9 @@ export class ThumbnailAgent extends BaseAgent<ImageRequest, ImageOutput> {
 export class VideoAgent extends BaseAgent<VideoRequest, VideoOutput> {
   readonly name = 'VideoAgent';
   protected async execute(input: VideoRequest, ctx: AgentContext): Promise<AgentResult<VideoOutput>> {
-    this.step('generate', 'ok', 'video (mock)');
-    const out = await videoProviderFor().generateVideo(input, ctx.brand, ctx.businessId);
+    const provider = videoProviderFor(ctx.brand);
+    this.step('generate', 'ok', `video (${provider.name})`);
+    const out = await provider.generateVideo(input, ctx.brand, ctx.businessId);
     return this.result(out);
   }
 }

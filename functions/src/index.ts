@@ -12,6 +12,7 @@ import { callClaude } from './anthropic';
 import { callOpenAI } from './openai';
 import { callGemini } from './gemini';
 import { generateImageOpenAI } from './openaiImage';
+import { generateVideoBroker } from './video';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -19,6 +20,7 @@ initializeApp();
 const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY');
 const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
+const HIGGSFIELD_CREDENTIALS = defineSecret('HIGGSFIELD_CREDENTIALS');
 
 const KINDS: GenKind[] = ['content', 'script', 'review', 'social', 'repurpose', 'gbp', 'seo', 'photo', 'lead', 'missed_call', 'review_template', 'task'];
 const PROVIDERS: LlmProvider[] = ['claude', 'openai', 'gemini'];
@@ -74,5 +76,36 @@ export const generateImage = onCall({ secrets: [] }, async (request) => {
     return await generateImageOpenAI(OPENAI_API_KEY.value(), fullPrompt, data.aspectRatio ?? '1:1');
   } catch (err) {
     throw new HttpsError('internal', err instanceof Error ? err.message : 'Image generation failed.');
+  }
+});
+
+interface VideoData {
+  businessId: string;
+  prompt: string;
+  durationSeconds?: number;
+  aspectRatio?: string;
+  imageUrl?: string;
+}
+
+// Higgsfield video generation. Bind HIGGSFIELD_CREDENTIALS ("keyId:keySecret")
+// once the account is set up — until then callers get a clear "not configured"
+// error and can stay on the mock provider.
+export const generateVideo = onCall({ secrets: [HIGGSFIELD_CREDENTIALS], timeoutSeconds: 300 }, async (request) => {
+  const data = request.data as VideoData;
+  if (!data?.businessId || !data?.prompt) {
+    throw new HttpsError('invalid-argument', 'businessId and prompt are required.');
+  }
+  await assertMember(request, data.businessId);
+
+  try {
+    return await generateVideoBroker(
+      HIGGSFIELD_CREDENTIALS.value(),
+      data.prompt,
+      data.durationSeconds ?? 15,
+      data.aspectRatio ?? '9:16',
+      data.imageUrl,
+    );
+  } catch (err) {
+    throw new HttpsError('internal', err instanceof Error ? err.message : 'Video generation failed.');
   }
 });

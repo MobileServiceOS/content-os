@@ -71,9 +71,14 @@ export function buildPrompt(
     .filter(Boolean)
     .join('\n');
 
+  const favorStyles = Array.isArray((payload as { favorStyles?: unknown }).favorStyles)
+    ? ((payload as { favorStyles: unknown[] }).favorStyles.filter((s) => typeof s === 'string') as string[])
+    : [];
+
   const user = [
     KIND_BRIEF[kind],
     `Inputs (JSON): ${JSON.stringify(payload)}`,
+    favorStyles.length ? `These angles have performed best recently — lean toward them when it fits naturally: ${favorStyles.join(', ')}.` : '',
     avoid.length ? `Do NOT repeat the structure or wording of these recent outputs:\n${avoid.slice(0, 12).map((a) => `- ${a}`).join('\n')}` : '',
     `Respond with JSON only.`,
   ]

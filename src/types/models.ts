@@ -56,6 +56,10 @@ export interface BrandSettings {
   provider?: 'mock' | 'claude' | 'openai' | 'gemini';
   /** Which image provider this business uses. Defaults to 'mock'. */
   imageProvider?: 'mock' | 'openai';
+  /** Which video provider this business uses. Defaults to 'mock'. */
+  videoProvider?: 'mock' | 'higgsfield';
+  /** When true, top-performing styles bias future generation (Learning Engine). Default off. */
+  learningEnabled?: boolean;
 }
 
 export interface ContentItem extends Audit {
@@ -73,6 +77,12 @@ export interface ContentItem extends Audit {
   assetId?: string;
   /** Approval workflow state (Level 3). */
   approvalState?: ApprovalState;
+  /** Hook category, captured at generation, copied onto PostPerformance at publish. */
+  hookCategory?: string;
+  /** Caption framework, captured at generation, copied onto PostPerformance at publish. */
+  captionFramework?: string;
+  /** Video length in seconds when this item is a video, for best-length analysis. */
+  videoLengthSec?: number;
 }
 
 export interface CalendarItem extends Audit {

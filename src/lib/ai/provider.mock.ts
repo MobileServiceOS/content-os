@@ -11,6 +11,33 @@ import { CTA_BANK } from './pools/ctas';
 import { REVIEW_STRUCTURES } from './pools/reviewResponses';
 import { SOCIAL_STRUCTURES } from './pools/socialReplies';
 import { substitute } from './tokens';
+import { activeWeight } from '../analytics/biasState';
+
+/**
+ * Category iteration order. Unbiased: the original round-robin (rotation offset)
+ * — existing behavior is preserved exactly. Biased (Learning Engine on): favored
+ * categories are repeated proportional to their weight so they surface more
+ * often, while every category stays in the rotation to preserve variety.
+ */
+function categoryOrder(cats: (string | undefined)[], rotation: number): (string | undefined)[] {
+  const weighted = cats.map((c) => ({ c, w: activeWeight(String(c)) }));
+  const biased = weighted.some((x) => x.w !== 1);
+  if (!biased) return cats.map((_, i) => cats[(rotation + i) % cats.length]);
+  const bag: (string | undefined)[] = [];
+  weighted.forEach(({ c, w }) => {
+    const reps = Math.max(1, Math.round(w * 2)); // weight 1.5 -> 3 slots, 0.5 -> 1 slot
+    for (let i = 0; i < reps; i++) bag.push(c);
+  });
+  // Rotate the bag, then de-dup to first appearance for the iteration order.
+  const seen = new Set<string>();
+  const order: (string | undefined)[] = [];
+  for (let i = 0; i < bag.length; i++) {
+    const c = bag[(rotation + i) % bag.length];
+    const key = String(c);
+    if (!seen.has(key)) { seen.add(key); order.push(c); }
+  }
+  return order;
+}
 
 /** Rotate across categories, then pick a non-avoided structure within. */
 function pickStructure(
@@ -19,8 +46,8 @@ function pickStructure(
   rotation: number,
 ): Structure {
   const cats = Array.from(new Set(structures.map((s) => s.category)));
-  for (let i = 0; i < cats.length; i++) {
-    const cat = cats[(rotation + i) % cats.length];
+  const order = categoryOrder(cats, rotation);
+  for (const cat of order) {
     const inCat = structures.filter((s) => s.category === cat && !avoid.includes(s.id));
     if (inCat.length) return inCat[rotation % inCat.length];
   }

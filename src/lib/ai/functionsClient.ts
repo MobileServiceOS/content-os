@@ -69,12 +69,16 @@ export function toBrandLite(brand: BrandSettings): BrandLite {
 /** Default transport: calls the deployed `generate` callable. Firebase is
  * imported lazily so test code that injects a mock transport never loads it. */
 export const callGenerate: GenerateTransport = async (args) => {
-  const [{ httpsCallable }, { functions }] = await Promise.all([
+  const [{ httpsCallable }, { functions }, { activeFavorStyles }] = await Promise.all([
     import('firebase/functions'),
     import('../firebase/client'),
+    import('../analytics/biasState'),
   ]);
+  // Learning Engine: nudge the LLM toward proven styles (no-op when unbiased).
+  const favor = activeFavorStyles();
+  const payload = favor.length ? { ...args.payload, favorStyles: favor } : args.payload;
   const fn = httpsCallable<GenerateArgs, GenerateResponse>(functions, 'generate');
-  const res = await fn(args);
+  const res = await fn({ ...args, payload });
   return res.data;
 };
 

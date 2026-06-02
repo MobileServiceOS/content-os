@@ -20,7 +20,7 @@ type Kind = 'image' | 'thumbnail' | 'video';
 const KINDS: { value: Kind; label: string }[] = [
   { value: 'image', label: 'Image' },
   { value: 'thumbnail', label: 'Thumbnail' },
-  { value: 'video', label: 'Video (mock)' },
+  { value: 'video', label: 'Video' },
 ];
 const ASPECTS = (Object.keys(ASPECT_LABELS) as AspectRatio[]).map((value) => ({ value, label: ASPECT_LABELS[value] }));
 const emptyRecent = (): RecentByType => ({ hook: [], caption: [], cta: [], script: [], review: [], reply: [] });
@@ -33,6 +33,8 @@ interface Preview {
   height: number;
   provider: string;
   note?: string;
+  videoUrl?: string;
+  predictedViralScore?: number;
 }
 
 export default function Media() {
@@ -61,7 +63,7 @@ export default function Media() {
       if (kind === 'video') {
         const res = await agents.video.run({ prompt, durationSeconds: Number(duration) || 15, aspectRatio: aspect }, ctx);
         const dims = ASPECT_DIMENSIONS[aspect];
-        setPreview({ kind, dataUrl: res.output.video.posterDataUrl, alt: res.output.video.alt, width: dims.width, height: dims.height, provider: res.output.cost.provider, note: res.output.video.note });
+        setPreview({ kind, dataUrl: res.output.video.posterDataUrl, alt: res.output.video.alt, width: dims.width, height: dims.height, provider: res.output.cost.provider, note: res.output.video.note, videoUrl: res.output.video.videoUrl, predictedViralScore: res.output.video.predictedViralScore });
         await recordCost(user.uid, 'video', { provider: res.output.cost.provider as ProviderName, tokens: 0, estimatedCostUsd: res.output.cost.estimatedCostUsd, generationTimeMs: res.output.cost.generationTimeMs, regenerationCount: 0 });
       } else {
         const agent = kind === 'thumbnail' ? agents.thumbnail : agents.image;
@@ -79,7 +81,7 @@ export default function Media() {
 
   async function onSave() {
     if (!preview) return;
-    const id = await save({ kind: preview.kind, prompt, dataUrl: preview.dataUrl, alt: preview.alt, width: preview.width, height: preview.height, provider: preview.provider });
+    const id = await save({ kind: preview.kind, prompt, dataUrl: preview.videoUrl ?? preview.dataUrl, alt: preview.alt, width: preview.width, height: preview.height, provider: preview.provider });
     setSavedId(id);
   }
 
@@ -108,9 +110,20 @@ export default function Media() {
         <div className="card stack" style={{ marginTop: 16 }}>
           <div className="row between">
             <h2 style={{ margin: 0 }}>Preview</h2>
-            <span className="tag">{preview.provider}</span>
+            <div className="row" style={{ gap: 6 }}>
+              {preview.predictedViralScore !== undefined && (
+                <span className="tag" style={{ borderColor: 'var(--c-violet)' }} title="Predicted viral score">
+                  🔮 Viral {Math.round(preview.predictedViralScore * 100)}
+                </span>
+              )}
+              <span className="tag">{preview.provider}</span>
+            </div>
           </div>
-          <img src={preview.dataUrl} alt={preview.alt} style={{ width: '100%', borderRadius: 8, border: '1px solid var(--border)' }} />
+          {preview.videoUrl ? (
+            <video src={preview.videoUrl} poster={preview.dataUrl} controls style={{ width: '100%', borderRadius: 8, border: '1px solid var(--border)' }} />
+          ) : (
+            <img src={preview.dataUrl} alt={preview.alt} style={{ width: '100%', borderRadius: 8, border: '1px solid var(--border)' }} />
+          )}
           {preview.note && <p className="muted" style={{ fontSize: '0.8rem' }}>{preview.note}</p>}
           <RoleGate action="content.create" fallback={<p className="muted">Viewers can’t save media.</p>}>
             <div className="row">

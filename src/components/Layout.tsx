@@ -6,10 +6,12 @@ import Nav from './Nav';
 import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { createWheelRushWorkspace } from '../lib/onboarding';
+import { useApplyLearningBias } from '../hooks/useApplyLearningBias';
 
 export default function Layout() {
   const { loading, noTenant } = useBusiness();
   const { user } = useAuth();
+  useApplyLearningBias();
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 

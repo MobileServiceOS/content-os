@@ -80,3 +80,14 @@ export const taskDoc = (businessId: string, id: string): DocumentReference =>
 
 export const agentLogsCol = (businessId: string): CollectionReference =>
   collection(db, 'businesses', businessId, 'agentLogs');
+
+// --- Analytics (post-publication performance) ---
+export const postPerformanceCol = (businessId: string): CollectionReference =>
+  collection(db, 'businesses', businessId, 'postPerformance');
+export const postPerformanceDoc = (businessId: string, id: string): DocumentReference =>
+  doc(db, 'businesses', businessId, 'postPerformance', id);
+export const performanceSnapshotsCol = (
+  businessId: string,
+  postId: string,
+): CollectionReference =>
+  collection(db, 'businesses', businessId, 'postPerformance', postId, 'snapshots');

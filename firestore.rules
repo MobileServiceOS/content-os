@@ -153,6 +153,32 @@ service cloud.firestore {
         allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
         allow update, delete: if false;
       }
+
+      // Post performance — metrics are updatable, but the dimensions copied at
+      // publish time are immutable (so historical analytics stay truthful).
+      match /postPerformance/{id} {
+        function dimsUnchanged() {
+          return request.resource.data.platform == resource.data.platform
+            && request.resource.data.get('hookCategory', null) == resource.data.get('hookCategory', null)
+            && request.resource.data.get('captionFramework', null) == resource.data.get('captionFramework', null)
+            && request.resource.data.get('service', null) == resource.data.get('service', null)
+            && request.resource.data.get('vehicle', null) == resource.data.get('vehicle', null)
+            && request.resource.data.get('tireSize', null) == resource.data.get('tireSize', null)
+            && request.resource.data.get('city', null) == resource.data.get('city', null)
+            && request.resource.data.get('videoLengthSec', null) == resource.data.get('videoLengthSec', null);
+        }
+        allow read: if isMember(bid);
+        allow create: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid) && dimsUnchanged();
+        allow delete: if hasRole(bid, ['owner']);
+
+        // Append-only daily metric snapshots (time series).
+        match /snapshots/{date} {
+          allow read: if isMember(bid);
+          allow create: if hasRole(bid, ['owner', 'manager']);
+          allow update, delete: if false;
+        }
+      }
     }
 
     // Default deny everything else.

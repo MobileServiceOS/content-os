@@ -7,7 +7,10 @@ import Modal from '../components/ui/Modal';
 import RoleGate from '../components/RoleGate';
 import { TextField, TextArea, SelectField } from '../components/ui/Field';
 import { useContentItems } from '../hooks/useContentItems';
+import { usePostPerformance } from '../hooks/usePostPerformance';
 import { PLATFORM_LABELS } from '../types/generation';
+import { POST_PLATFORM_LABELS } from '../types/analytics';
+import type { PostPlatform } from '../types/analytics';
 import type { ContentItem, ContentStatus } from '../types/models';
 
 const STATUS_OPTIONS: { value: ContentStatus; label: string }[] = [
@@ -23,11 +26,13 @@ const STATUS_COLOR: Record<ContentStatus, string> = {
 
 export default function Library() {
   const { items, loading, update, remove, duplicate, setStatus, archive } = useContentItems();
+  const { linkFromContentItem } = usePostPerformance();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | ContentStatus>('all');
   const [platformFilter, setPlatformFilter] = useState<'all' | string>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [editing, setEditing] = useState<ContentItem | null>(null);
+  const [tracking, setTracking] = useState<ContentItem | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -106,6 +111,7 @@ export default function Library() {
                   <button className="btn btn-sm" onClick={() => void archive(item.id, !item.archived)}>
                     {item.archived ? 'Unarchive' : 'Archive'}
                   </button>
+                  <button className="btn btn-sm" onClick={() => setTracking(item)} title="Track this post's performance">📈 Track</button>
                 </RoleGate>
                 <RoleGate action="content.delete">
                   <button className="btn btn-sm btn-danger" onClick={() => void remove(item.id)}>Delete</button>
@@ -119,7 +125,59 @@ export default function Library() {
       {editing && (
         <EditModal item={editing} onClose={() => setEditing(null)} onSave={(patch) => { void update(editing.id, patch); setEditing(null); }} />
       )}
+      {tracking && (
+        <TrackModal
+          item={tracking}
+          onClose={() => setTracking(null)}
+          onTrack={async (platform, postUrl) => {
+            if (tracking.status !== 'posted') await setStatus(tracking.id, 'posted');
+            await linkFromContentItem(tracking, { platform, postUrl: postUrl || undefined });
+            setTracking(null);
+          }}
+        />
+      )}
     </>
+  );
+}
+
+const PLATFORM_TO_POST: Record<string, PostPlatform> = {
+  tiktok: 'tiktok', instagram: 'instagram', facebook: 'facebook', youtube_shorts: 'youtube_shorts',
+};
+
+function TrackModal({
+  item,
+  onClose,
+  onTrack,
+}: {
+  item: ContentItem;
+  onClose: () => void;
+  onTrack: (platform: PostPlatform, postUrl: string) => Promise<void>;
+}) {
+  const [platform, setPlatform] = useState<PostPlatform>(PLATFORM_TO_POST[item.platform] ?? 'tiktok');
+  const [url, setUrl] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  return (
+    <Modal title="Track performance" onClose={onClose}>
+      <p className="muted" style={{ margin: 0, fontSize: '0.78rem' }}>
+        Creates a performance row for “{item.title}”. Add the live numbers in Analytics afterward.
+        {item.status !== 'posted' && ' This will also mark the item as posted.'}
+      </p>
+      <SelectField
+        label="Platform"
+        value={platform}
+        onChange={(v) => setPlatform(v as PostPlatform)}
+        options={(Object.keys(POST_PLATFORM_LABELS) as PostPlatform[]).map((value) => ({ value, label: POST_PLATFORM_LABELS[value] }))}
+      />
+      <TextField label="Post URL (optional)" value={url} onChange={setUrl} placeholder="https://…" />
+      <button
+        className="btn btn-primary btn-block"
+        disabled={busy}
+        onClick={async () => { setBusy(true); try { await onTrack(platform, url); } finally { setBusy(false); } }}
+      >
+        {busy ? 'Adding…' : 'Start tracking'}
+      </button>
+    </Modal>
   );
 }
 

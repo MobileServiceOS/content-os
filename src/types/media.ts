@@ -2,7 +2,7 @@
 import type { BrandSettings } from './models';
 
 export type ImageProviderName = 'mock' | 'openai';
-export type VideoProviderName = 'mock';
+export type VideoProviderName = 'mock' | 'higgsfield';
 export type AspectRatio = '1:1' | '4:5' | '9:16' | '16:9';
 export type MediaKind = 'image' | 'thumbnail' | 'video';
 
@@ -43,6 +43,8 @@ export interface GeneratedVideo {
   alt: string;
   durationSeconds: number;
   note?: string; // e.g. "mock — real video generation is a follow-up"
+  videoUrl?: string; // real rendered video (MCP provider)
+  predictedViralScore?: number; // 0..1 from virality_predictor, when available
 }
 
 export interface VideoOutput {
