@@ -18,6 +18,7 @@ import {
   syncSearchConsole, disconnectSearchConsole, setStatus, APP_RETURN,
 } from './searchConsole';
 import * as gbp from './gbp';
+import * as social from './social';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -31,6 +32,14 @@ const SC_OAUTH_CLIENT_ID = defineSecret('SC_OAUTH_CLIENT_ID');
 const SC_OAUTH_CLIENT_SECRET = defineSecret('SC_OAUTH_CLIENT_SECRET');
 const SC_REDIRECT_URI = defineSecret('SC_REDIRECT_URI');
 const scSecrets = [SC_OAUTH_CLIENT_ID, SC_OAUTH_CLIENT_SECRET, SC_REDIRECT_URI];
+// Social platforms (TikTok first; IG/FB/YT add their own secrets here).
+const TIKTOK_CLIENT_KEY = defineSecret('TIKTOK_CLIENT_KEY');
+const TIKTOK_CLIENT_SECRET = defineSecret('TIKTOK_CLIENT_SECRET');
+const socialSecrets = [TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET];
+function socialCreds(platform: string): { clientId: string; secret: string } {
+  if (platform === 'tiktok') return { clientId: TIKTOK_CLIENT_KEY.value(), secret: TIKTOK_CLIENT_SECRET.value() };
+  throw new HttpsError('failed-precondition', `Platform ${platform} is not configured.`);
+}
 
 const KINDS: GenKind[] = ['content', 'script', 'review', 'social', 'repurpose', 'gbp', 'seo', 'photo', 'lead', 'missed_call', 'review_template', 'task'];
 const PROVIDERS: LlmProvider[] = ['claude', 'openai', 'gemini'];
@@ -214,5 +223,63 @@ export const gbpDisconnect = onCall(async (request) => {
   if (!data?.businessId) throw new HttpsError('invalid-argument', 'businessId is required.');
   await assertMember(request, data.businessId);
   await gbp.disconnectGbp(data.businessId);
+  return { ok: true };
+});
+
+// --- Social platforms (generic; one endpoint set serves TikTok/IG/FB/YT) ---
+function connectorOr(platform: string): social.PlatformConnector {
+  const c = social.connectorFor(platform);
+  if (!c) throw new HttpsError('invalid-argument', `Unknown platform: ${platform}`);
+  return c;
+}
+
+export const socialAuthUrl = onCall({ secrets: socialSecrets }, async (request) => {
+  const data = request.data as { businessId?: string; platform?: string };
+  if (!data?.businessId || !data?.platform) throw new HttpsError('invalid-argument', 'businessId and platform are required.');
+  await assertMember(request, data.businessId);
+  const c = connectorOr(data.platform);
+  const { clientId, secret } = socialCreds(data.platform);
+  const state = social.signState(data.platform, data.businessId, secret);
+  return { url: c.authUrl(clientId, social.REDIRECT_URI, state) };
+});
+
+export const socialOAuthCallback = onRequest({ secrets: socialSecrets }, async (req, res) => {
+  const code = String(req.query.code ?? '');
+  const state = String(req.query.state ?? '');
+  const oauthErr = String(req.query.error ?? '');
+  // We must verify the state to know the platform; use TikTok secret (only one) for HMAC.
+  const verified = social.verifyState(state, TIKTOK_CLIENT_SECRET.value());
+  const platform = verified?.platform ?? 'tiktok';
+  const back = (status: string) => res.redirect(`${social.SOCIAL_APP_RETURN}?social=${status}&platform=${platform}`);
+  if (oauthErr || !verified || !code) { back('error'); return; }
+  try {
+    const c = connectorOr(verified.platform);
+    const { clientId, secret } = socialCreds(verified.platform);
+    await social.completeOAuth(c, verified.businessId, clientId, secret, code);
+    back('connected');
+  } catch {
+    if (verified) await social.setStatus(verified.businessId, verified.platform, { status: 'error', error: 'OAuth exchange failed.' });
+    back('error');
+  }
+});
+
+export const socialSync = onCall({ secrets: socialSecrets }, async (request) => {
+  const data = request.data as { businessId?: string; platform?: string };
+  if (!data?.businessId || !data?.platform) throw new HttpsError('invalid-argument', 'businessId and platform are required.');
+  await assertMember(request, data.businessId);
+  const c = connectorOr(data.platform);
+  const { clientId, secret } = socialCreds(data.platform);
+  try {
+    return await social.syncPlatform(c, data.businessId, clientId, secret);
+  } catch (err) {
+    throw new HttpsError('internal', err instanceof Error ? err.message : 'Sync failed.');
+  }
+});
+
+export const socialDisconnect = onCall(async (request) => {
+  const data = request.data as { businessId?: string; platform?: string };
+  if (!data?.businessId || !data?.platform) throw new HttpsError('invalid-argument', 'businessId and platform are required.');
+  await assertMember(request, data.businessId);
+  await social.disconnectPlatform(connectorOr(data.platform), data.businessId);
   return { ok: true };
 });

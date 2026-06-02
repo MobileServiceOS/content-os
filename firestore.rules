@@ -200,6 +200,13 @@ service cloud.firestore {
         allow read: if isMember(bid);
         allow write: if false;
       }
+
+      // Synced social-platform data (TikTok/IG/FB/YT), one doc per platform.
+      // Tokens live under the locked private/ match above (private/social_*).
+      match /social/{doc} {
+        allow read: if isMember(bid);
+        allow write: if false;
+      }
     }
 
     // Default deny everything else.
