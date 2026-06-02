@@ -15,10 +15,11 @@ import {
 import { JobsIntel } from '../components/director/msosSections';
 import { ViralEngine } from '../components/director/viralSections';
 import { ReviewIntel } from '../components/director/reviewSections';
+import { AvatarStudio } from '../components/director/avatarSections';
 import type { DirectorDataset } from '../lib/director/types';
 
 type Key =
-  | 'exec' | 'jobs' | 'viral' | 'reviewintel' | 'content' | 'hooks' | 'cities' | 'services'
+  | 'exec' | 'jobs' | 'viral' | 'reviewintel' | 'avatar' | 'content' | 'hooks' | 'cities' | 'services'
   | 'seo' | 'reviews' | 'revenue' | 'ideas' | 'brief';
 
 const TABS: { key: Key; label: string; icon: string; render: (ds: DirectorDataset) => ReactNode }[] = [
@@ -26,6 +27,7 @@ const TABS: { key: Key; label: string; icon: string; render: (ds: DirectorDatase
   { key: 'jobs', label: 'Revenue Intel (MSOS)', icon: '💵', render: () => <JobsIntel /> },
   { key: 'viral', label: 'Viral Engine', icon: '🔥', render: () => <ViralEngine /> },
   { key: 'reviewintel', label: 'Review Intel', icon: '💬', render: () => <ReviewIntel /> },
+  { key: 'avatar', label: 'Avatar Studio', icon: '🎭', render: () => <AvatarStudio /> },
   { key: 'content', label: 'Content', icon: '🎬', render: (ds) => <ContentPerformanceView ds={ds} /> },
   { key: 'hooks', label: 'Hooks', icon: '🪝', render: (ds) => <HookLeaderboardView ds={ds} /> },
   { key: 'cities', label: 'Cities', icon: '📍', render: (ds) => <CityPerformanceView ds={ds} /> },
