@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Director from './pages/Director';
 import NewJob from './pages/NewJob';
 import ContentGenerator from './pages/ContentGenerator';
 import ScriptWriter from './pages/ScriptWriter';
@@ -39,6 +40,7 @@ export default function App() {
             }
           >
             <Route path="/" element={<Dashboard />} />
+            <Route path="/director" element={<Director />} />
             <Route path="/new-job" element={<NewJob />} />
             <Route path="/generator" element={<ContentGenerator />} />
             <Route path="/script" element={<ScriptWriter />} />

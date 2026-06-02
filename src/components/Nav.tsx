@@ -18,6 +18,7 @@ interface Item {
 
 const ITEMS: Item[] = [
   { to: '/', label: 'Home', icon: '🏠' },
+  { to: '/director', label: 'Marketing Director', icon: '🧭', group: 'Director' },
   { to: '/new-job', label: 'New Job', icon: '⚡', creatorsOnly: true, group: 'Create' },
   { to: '/generator', label: 'Generator', icon: '✨', creatorsOnly: true, group: 'Create' },
   { to: '/script', label: 'Script', icon: '🎬', creatorsOnly: true, group: 'Create' },

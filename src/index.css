@@ -165,6 +165,14 @@ input, select, textarea, button { font: inherit; }
 .btn-block { width: 100%; }
 .btn-sm { padding: 6px 11px; min-height: 34px; font-size: 0.85rem; }
 
+/* Marketing Director sub-tabs — horizontal scroll on mobile, wrap on desktop */
+.dir-tabs {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+}
+.dir-tabs .btn { flex: 0 0 auto; white-space: nowrap; }
+@media (min-width: 820px) { .dir-tabs { flex-wrap: wrap; overflow-x: visible; } }
+
 /* Form fields */
 .field { display: block; margin-bottom: 12px; }
 .field > label { display: block; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 5px; font-weight: 600; }
@@ -187,6 +195,12 @@ input, select, textarea, button { font: inherit; }
 .badge-approved { background: rgba(47, 224, 160, 0.16); color: var(--success); }
 .badge-scheduled { background: rgba(255, 194, 75, 0.16); color: var(--warning); }
 .badge-posted { background: rgba(91, 140, 255, 0.2); color: var(--c-blue); }
+
+/* Data table (analytics) */
+.table { border-collapse: collapse; }
+.table th { color: var(--text-dim); font-weight: 700; font-size: 0.74rem; text-align: center; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.table tbody tr:hover { background: rgba(130, 148, 210, 0.06); }
 
 /* Utility */
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
