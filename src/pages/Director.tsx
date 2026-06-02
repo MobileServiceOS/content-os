@@ -16,11 +16,12 @@ import { JobsIntel } from '../components/director/msosSections';
 import { ViralEngine } from '../components/director/viralSections';
 import { ReviewIntel } from '../components/director/reviewSections';
 import { AvatarStudio } from '../components/director/avatarSections';
+import { AutomationCenter } from '../components/director/automationSections';
 import type { DirectorDataset } from '../lib/director/types';
 
 type Key =
   | 'exec' | 'jobs' | 'viral' | 'reviewintel' | 'avatar' | 'content' | 'hooks' | 'cities' | 'services'
-  | 'seo' | 'reviews' | 'revenue' | 'ideas' | 'brief';
+  | 'seo' | 'reviews' | 'revenue' | 'ideas' | 'brief' | 'automation';
 
 const TABS: { key: Key; label: string; icon: string; render: (ds: DirectorDataset) => ReactNode }[] = [
   { key: 'exec', label: 'Executive', icon: '🧭', render: (ds) => <ExecutiveDashboard ds={ds} /> },
@@ -37,6 +38,7 @@ const TABS: { key: Key; label: string; icon: string; render: (ds: DirectorDatase
   { key: 'revenue', label: 'Revenue', icon: '💰', render: (ds) => <RevenueDirectorView ds={ds} /> },
   { key: 'ideas', label: 'Opportunities', icon: '✨', render: (ds) => <ContentOpportunitiesView ds={ds} /> },
   { key: 'brief', label: 'Daily Brief', icon: '📋', render: (ds) => <DailyBriefView ds={ds} /> },
+  { key: 'automation', label: 'Automation', icon: '🤖', render: () => <AutomationCenter /> },
 ];
 
 export default function Director() {
