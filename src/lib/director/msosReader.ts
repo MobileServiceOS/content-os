@@ -6,6 +6,7 @@
 // one is selected.
 import type { JobRecord, JobStatus } from './types';
 import { msosDb } from './msosApp';
+import { verticalFor, type VerticalId } from '../verticals';
 
 // --- pure normalization (unit-tested; no Firebase) ---
 const toNum = (v: unknown): number => {
@@ -61,6 +62,8 @@ export function normalizeJob(raw: Record<string, unknown>, id: string, nameByUid
 export interface MsosBusiness {
   id: string;
   name: string;
+  /** Resolved vertical (from MSOS businessType; defaults to tire). */
+  vertical: VerticalId;
 }
 
 /**
@@ -113,10 +116,15 @@ export async function listMsosBusinesses(uid: string): Promise<MsosBusinessList>
   const businesses = await Promise.all(ids.map(async (id): Promise<MsosBusiness> => {
     try {
       const s = await getDoc(doc(db, `businesses/${id}/settings/main`));
-      const name = (s.data()?.businessName as string) || '';
-      return { id, name: name || `Business ·${id.slice(-4)}` };
+      const data = (s.data() ?? {}) as Record<string, unknown>;
+      const name = (data.businessName as string) || '';
+      return {
+        id,
+        name: name || `Business ·${id.slice(-4)}`,
+        vertical: verticalFor(data.businessType as string | undefined).id,
+      };
     } catch {
-      return { id, name: `Business ·${id.slice(-4)}` };
+      return { id, name: `Business ·${id.slice(-4)}`, vertical: verticalFor(null).id };
     }
   }));
   return { businesses, activeBusinessId };

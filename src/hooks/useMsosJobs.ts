@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { onMsosAuth, connectMsosEmail, connectMsosGoogle, disconnectMsos } from '../lib/director/msosApp';
 import { listMsosBusinesses, fetchMsosJobs, pickDefaultBusiness, type MsosBusiness } from '../lib/director/msosReader';
+import { VERTICALS, verticalFor, type VerticalConfig } from '../lib/verticals';
 import type { JobRecord } from '../lib/director/types';
 
 const SEL_KEY = 'msos.selectedBusinessId';
@@ -19,6 +20,8 @@ export interface UseMsosJobs {
   account: string | null;
   businesses: MsosBusiness[];
   selectedBusinessId: string | null;
+  /** Vertical config of the selected business (drives product dimension, vocab). */
+  vertical: VerticalConfig;
   selectBusiness: (id: string) => void;
   connectEmail: (email: string, password: string) => Promise<void>;
   connectGoogle: () => Promise<void>;
@@ -136,6 +139,7 @@ export function useMsosJobs(): UseMsosJobs {
     account,
     businesses,
     selectedBusinessId,
+    vertical: VERTICALS[businesses.find((b) => b.id === selectedBusinessId)?.vertical ?? verticalFor(null).id],
     selectBusiness,
     connectEmail,
     connectGoogle,

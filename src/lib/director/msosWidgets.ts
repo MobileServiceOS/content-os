@@ -203,6 +203,69 @@ export function recommendedContent(jobs: JobRecord[]): ContentRec[] {
   return recs;
 }
 
+// === Phase 1: Revenue Intelligence additions ===
+
+// Generic revenue group-by on any JobRecord field (drives the vertical's product dimension).
+export const revenueByVehicle = (jobs: JobRecord[]): RevGroup[] => revenueBy(jobs, (j) => j.vehicle);
+export const revenueByField = (jobs: JobRecord[], field: keyof JobRecord): RevGroup[] =>
+  revenueBy(jobs, (j) => String(j[field] ?? 'Unknown'));
+
+/** New vs Returning, by how many completed jobs share a customer name. */
+export function revenueByCustomerType(jobs: JobRecord[]): RevGroup[] {
+  const freq = new Map<string, number>();
+  for (const j of completedOnly(jobs)) freq.set(j.customer, (freq.get(j.customer) ?? 0) + 1);
+  return revenueBy(jobs, (j) => ((freq.get(j.customer) ?? 0) > 1 ? 'Returning' : 'New'));
+}
+
+// --- time-window revenue ---
+export interface WindowRevenue { label: string; revenue: number; jobs: number; }
+export interface RevenueWindows {
+  today: WindowRevenue; yesterday: WindowRevenue; thisWeek: WindowRevenue;
+  thisMonth: WindowRevenue; lastMonth: WindowRevenue; last90: WindowRevenue;
+}
+const startOfDay = (ms: number): number => { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const startOfMonth = (ms: number): number => { const d = new Date(ms); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); };
+const startOfPrevMonth = (ms: number): number => { const d = new Date(ms); return new Date(d.getFullYear(), d.getMonth() - 1, 1).getTime(); };
+
+function windowRev(jobs: JobRecord[], start: number, end: number, label: string): WindowRevenue {
+  const inWin = jobs.filter((j) => j.status === 'completed' && j.ticketUsd > 0 && j.completedAt >= start && j.completedAt < end);
+  return { label, revenue: sum(inWin.map((j) => j.ticketUsd)), jobs: inWin.length };
+}
+
+/** Revenue for standard windows, anchored at `now` (pass Date.now() in the UI). */
+export function revenueWindows(jobs: JobRecord[], now: number): RevenueWindows {
+  const sod = startOfDay(now);
+  const end = now + 1;
+  return {
+    today: windowRev(jobs, sod, end, 'Today'),
+    yesterday: windowRev(jobs, sod - DAY, sod, 'Yesterday'),
+    thisWeek: windowRev(jobs, sod - 6 * DAY, end, 'This week'),
+    thisMonth: windowRev(jobs, startOfMonth(now), end, 'This month'),
+    lastMonth: windowRev(jobs, startOfPrevMonth(now), startOfMonth(now), 'Last month'),
+    last90: windowRev(jobs, sod - 89 * DAY, end, 'Last 90 days'),
+  };
+}
+
+// --- top rollups ---
+export interface RevenueRollups {
+  topCity: RevGroup | null;
+  topService: RevGroup | null;
+  topTechnician: RevGroup | null;
+  highestAvgTicketService: RevGroup | null;
+  highestLifetimeCustomer: RevGroup | null;
+}
+export function revenueRollups(jobs: JobRecord[]): RevenueRollups {
+  const services = revenueByService(jobs);
+  const highAvg = [...services].sort((a, b) => b.avgTicket - a.avgTicket)[0] ?? null;
+  return {
+    topCity: revenueByCity(jobs)[0] ?? null,
+    topService: services[0] ?? null,
+    topTechnician: revenueByTechnician(jobs)[0] ?? null,
+    highestAvgTicketService: highAvg,
+    highestLifetimeCustomer: topCustomers(jobs, 1)[0] ?? null,
+  };
+}
+
 // --- formatting helpers ---
 export function money(n: number): string { return `$${Math.round(n).toLocaleString('en-US')}`; }
 const pctStr = (frac: number): string => `${Math.round(frac * 100)}%`;

@@ -6,10 +6,13 @@ import { Link } from 'react-router-dom';
 import { useMsosJobs } from '../../hooks/useMsosJobs';
 import { compact } from '../../lib/analytics/format';
 import {
-  jobsKpis, revenueByCity, revenueByService, revenueByTechnician, revenueByTireSize,
+  jobsKpis, revenueByCity, revenueByService, revenueByTechnician,
+  revenueByVehicle, revenueByCustomerType, revenueByField,
+  revenueWindows, revenueRollups, serviceKeyword,
   topCustomers, dailyRevenueTrend, monthlyRevenueTrend, serviceHeatMap,
   revenueOpportunity, recommendedContent, money,
 } from '../../lib/director/msosWidgets';
+import { revenueInsight, type RevenueInsight } from '../../lib/director/insight';
 import type { JobRecord } from '../../lib/director/types';
 import { RankTable, SectionTitle, accentAt } from './shared';
 import TrendChart from '../analytics/TrendChart';
@@ -20,6 +23,19 @@ function Tile({ label, value, accent, sub }: { label: string; value: string; acc
       <div className="muted" style={{ fontSize: '0.74rem' }}>{label}</div>
       <div className="stat-value">{value}</div>
       {sub && <div className="muted" style={{ fontSize: '0.72rem' }}>{sub}</div>}
+    </div>
+  );
+}
+
+// The 4-part insight frame: what happened / why / action / expected $ impact.
+function InsightCard({ title, accent, insight }: { title: string; accent: string; insight: RevenueInsight }) {
+  return (
+    <div className="card stack" style={{ gap: 6, ['--accent' as string]: accent }}>
+      <span className="muted" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</span>
+      <strong style={{ fontSize: '0.92rem' }}>{insight.whatHappened}</strong>
+      <span className="muted" style={{ fontSize: '0.8rem' }}>Why: {insight.why}</span>
+      <span style={{ fontSize: '0.84rem' }}>→ {insight.action}</span>
+      <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)', fontSize: '0.7rem', alignSelf: 'flex-start' }}>{insight.impactLabel}</span>
     </div>
   );
 }
@@ -118,7 +134,7 @@ function ConnectState({
 
 export function JobsIntel() {
   const {
-    jobs, loading, needsConnect, error, readAt, account,
+    jobs, loading, needsConnect, error, readAt, account, vertical,
     businesses, selectedBusinessId, selectBusiness, connectEmail, connectGoogle, disconnect, reload,
   } = useMsosJobs();
 
@@ -180,19 +196,50 @@ export function JobsIntel() {
   const k = jobsKpis(jobs);
   const opp = revenueOpportunity(jobs);
   const recs = recommendedContent(jobs);
+  const win = revenueWindows(jobs, Date.now());
+  const roll = revenueRollups(jobs);
+  const drivers: { title: string; accent: string; insight: RevenueInsight }[] = [];
+  if (roll.topCity) drivers.push({ title: 'Top revenue city', accent: 'var(--c-blue)', insight: revenueInsight(roll.topCity.key, 'city', roll.topCity, `Create more ${roll.topCity.key} content.`) });
+  if (roll.topService) drivers.push({ title: 'Top revenue service', accent: 'var(--c-emerald)', insight: revenueInsight(roll.topService.key, 'service', roll.topService, `Create more ${serviceKeyword(roll.topService.key)} content.`) });
+  if (roll.topTechnician) drivers.push({ title: 'Top revenue technician', accent: 'var(--c-violet)', insight: revenueInsight(roll.topTechnician.key, 'technician', roll.topTechnician, `Feature ${roll.topTechnician.key} in a customer-story video.`) });
 
   return (
     <div className="stack" style={{ gap: 16 }}>
       {header}
 
-      {/* KPIs */}
+      {/* Time-window revenue */}
+      <div className="grid grid-3">
+        <Tile label="Revenue today" value={money(win.today.revenue)} accent="var(--c-emerald)" sub={`${win.today.jobs} jobs`} />
+        <Tile label="Yesterday" value={money(win.yesterday.revenue)} accent="var(--c-blue)" sub={`${win.yesterday.jobs} jobs`} />
+        <Tile label="This week" value={money(win.thisWeek.revenue)} accent="var(--c-cyan)" sub={`${win.thisWeek.jobs} jobs`} />
+        <Tile label="This month" value={money(win.thisMonth.revenue)} accent="var(--c-violet)" sub={`${win.thisMonth.jobs} jobs`} />
+        <Tile label="Last month" value={money(win.lastMonth.revenue)} accent="var(--c-amber)" sub={`${win.lastMonth.jobs} jobs`} />
+        <Tile label="Last 90 days" value={money(win.last90.revenue)} accent="var(--c-orange)" sub={`${win.last90.jobs} jobs`} />
+      </div>
+
+      {/* All-time KPIs */}
       <div className="grid grid-3">
         <Tile label="Revenue (completed)" value={money(k.totalRevenue)} accent="var(--c-emerald)" />
         <Tile label="Completed jobs" value={String(k.completedJobs)} accent="var(--c-blue)" />
         <Tile label="Avg ticket" value={money(k.avgTicket)} accent="var(--c-violet)" />
         <Tile label="Pending jobs" value={String(k.pendingJobs)} accent="var(--c-amber)" />
         <Tile label="Pending pipeline" value={money(k.pendingPipelineUsd)} accent="var(--c-orange)" sub="unrealized" />
+        {roll.highestAvgTicketService && <Tile label="Highest avg ticket" value={money(roll.highestAvgTicketService.avgTicket)} accent="var(--c-pink)" sub={roll.highestAvgTicketService.key} />}
       </div>
+
+      {/* Top revenue drivers — each with what happened / why / action / $ impact */}
+      {drivers.length > 0 && (
+        <div className="grid grid-3">
+          {drivers.map((d) => <InsightCard key={d.title} title={d.title} accent={d.accent} insight={d.insight} />)}
+        </div>
+      )}
+      {roll.highestLifetimeCustomer && (
+        <div className="card stack" style={{ gap: 4, ['--accent' as string]: 'var(--c-cyan)' }}>
+          <span className="muted" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Highest lifetime customer</span>
+          <strong style={{ fontSize: '0.92rem' }}>{roll.highestLifetimeCustomer.key} — {money(roll.highestLifetimeCustomer.revenue)} across {roll.highestLifetimeCustomer.jobs} job{roll.highestLifetimeCustomer.jobs === 1 ? '' : 's'}</strong>
+          <span style={{ fontSize: '0.84rem' }}>→ Ask for a Google review and a referral; offer a loyalty perk.</span>
+        </div>
+      )}
 
       {/* 9 + 10: opportunity + recommended content */}
       <div className="grid grid-2">
@@ -224,12 +271,16 @@ export function JobsIntel() {
         <div className="card stack"><SectionTitle accent="var(--c-blue)">Monthly Revenue Trend</SectionTitle><TrendChart points={monthlyRevenueTrend(jobs)} accent="var(--c-blue)" label="By month" /></div>
       </div>
 
-      {/* 1–4: revenue dimensions */}
+      {/* revenue dimensions (product dimension is vertical-driven, never hardcoded) */}
       <div className="grid grid-2">
         <div className="card stack"><SectionTitle accent={accentAt(0)}>Revenue by City</SectionTitle><RankTable rows={revenueByCity(jobs)} cols={revCols('City')} /></div>
         <div className="card stack"><SectionTitle accent={accentAt(1)}>Revenue by Service</SectionTitle><RankTable rows={revenueByService(jobs)} cols={revCols('Service')} /></div>
         <div className="card stack"><SectionTitle accent={accentAt(2)}>Revenue by Technician</SectionTitle><RankTable rows={revenueByTechnician(jobs)} cols={revCols('Technician')} /></div>
-        <div className="card stack"><SectionTitle accent={accentAt(3)}>Revenue by Tire Size</SectionTitle><RankTable rows={revenueByTireSize(jobs)} cols={revCols('Tire size')} /></div>
+        <div className="card stack"><SectionTitle accent={accentAt(3)}>Revenue by {vertical.productDimension.label}</SectionTitle><RankTable rows={revenueByField(jobs, vertical.productDimension.field)} cols={revCols(vertical.productDimension.label)} /></div>
+        {vertical.productDimension.field !== 'vehicle' && (
+          <div className="card stack"><SectionTitle accent={accentAt(4)}>Revenue by Vehicle Type</SectionTitle><RankTable rows={revenueByVehicle(jobs)} cols={revCols('Vehicle')} /></div>
+        )}
+        <div className="card stack"><SectionTitle accent={accentAt(5)}>Revenue by Customer Type</SectionTitle><RankTable rows={revenueByCustomerType(jobs)} cols={revCols('Customer type')} /></div>
       </div>
 
       {/* 5: top customers */}
