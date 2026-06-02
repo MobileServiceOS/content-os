@@ -9,6 +9,7 @@
 import type { DirectorSource, FetchRange } from './index';
 import type { DirectorDataset, SourceId, SourceStatus } from '../types';
 import { SourceNotConfiguredError } from './empty';
+import { fetchMsosJobs, MSOS_NOT_CONFIGURED } from '../msosClient';
 
 function stub(id: SourceId, label: string): DirectorSource {
   return {
@@ -22,7 +23,25 @@ function stub(id: SourceId, label: string): DirectorSource {
   };
 }
 
-export const msosJobsSource = stub('msos_jobs', 'MSOS Jobs');
+// MSOS Jobs is the one Phase-2 source that's fully wired (read-only). It returns
+// a real { jobs } slice via the getMsosJobs callable, or surfaces not-configured.
+export const msosJobsSource: DirectorSource = {
+  id: 'msos_jobs',
+  label: 'MSOS Jobs',
+  async status(businessId: string): Promise<SourceStatus> {
+    try {
+      const res = await fetchMsosJobs(businessId);
+      return { id: 'msos_jobs', label: 'MSOS Jobs', state: 'connected', lastSync: res.readAt };
+    } catch (err) {
+      const configured = (err as Error)?.message !== MSOS_NOT_CONFIGURED;
+      return { id: 'msos_jobs', label: 'MSOS Jobs', state: configured ? 'error' : 'disconnected' };
+    }
+  },
+  async fetch(businessId: string, _range: FetchRange): Promise<Partial<DirectorDataset>> {
+    const res = await fetchMsosJobs(businessId);
+    return { jobs: res.jobs };
+  },
+};
 export const gbpSource = stub('gbp', 'Google Business Profile');
 export const searchConsoleSource = stub('search_console', 'Search Console');
 export const ga4Source = stub('ga4', 'Google Analytics');

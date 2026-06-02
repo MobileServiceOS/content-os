@@ -127,6 +127,9 @@ function buildPost(i: number, r: () => number): PostPerformance {
   };
 }
 
+const TIRE_SIZES = ['225/45R17', '245/40R18', '275/40R20', '265/35R19', '235/55R19', '285/45R22', '255/35R20'];
+const CUSTOMERS = ['Carlos M.', 'Jasmine R.', 'David K.', 'Ana P.', 'Mike T.', 'Sofia L.', 'James W.', 'Lina G.'];
+
 function buildJob(i: number, r: () => number): JobRecord {
   const service = pick(r, SERVICES);
   const city = pick(r, CITIES);
@@ -136,7 +139,10 @@ function buildJob(i: number, r: () => number): JobRecord {
     service, city,
     vehicle: pick(r, VEHICLES),
     technician: pick(r, TECHS),
+    tireSize: pick(r, TIRE_SIZES),
+    customer: pick(r, CUSTOMERS),
     ticketUsd: Math.round(ticket),
+    status: 'completed',
     completedAt: SAMPLE_NOW - between(r, 0, 29) * DAY,
   };
 }

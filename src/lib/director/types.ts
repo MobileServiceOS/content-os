@@ -8,15 +8,24 @@ import type { PostPerformance, PostPlatform } from '../../types/analytics';
 
 // --- data slices -----------------------------------------------------------
 
-/** One completed job — the revenue spine. Phase 2: from MSOS Jobs (read-only). */
+/** Job status, normalized from MSOS ('Completed'|'Pending'|'Cancelled'). */
+export type JobStatus = 'completed' | 'pending' | 'cancelled';
+
+/**
+ * One job — the revenue spine. Phase 2: read-only from MSOS Jobs
+ * (businesses/{id}/jobs in the mobile-service-os project), normalized here.
+ */
 export interface JobRecord {
   id: string;
   service: string;
   city: string;
   vehicle: string;
   technician: string;
+  tireSize: string;
+  customer: string;
   ticketUsd: number;
-  completedAt: number; // epoch ms
+  status: JobStatus;
+  completedAt: number; // epoch ms (job date)
 }
 
 /** A customer review distilled for theme analysis. Phase 2: from GBP. */
