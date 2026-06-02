@@ -1,9 +1,10 @@
-// READ-ONLY client reader for MSOS jobs. Runs as the signed-in MSOS user (second
-// app session), so every read is governed by MSOS's own Firestore rules. We only
-// call getDoc/getDocs — never set/update/delete. Nothing is persisted into
-// Content OS; the returned array lives in memory for the current view only.
+// READ-ONLY client reader for MSOS jobs, multi-business aware. Runs as the
+// signed-in MSOS user (second app session), so every read is governed by MSOS's
+// own Firestore rules. Only getDoc/getDocs — never set/update/delete. Nothing is
+// persisted into Content OS. No business is hardcoded: the list comes from the
+// user's own `users/{uid}.ownedBusinesses`, and the Director analyzes whichever
+// one is selected.
 import type { JobRecord, JobStatus } from './types';
-import { MSOS_BUSINESS_ID_OVERRIDE } from './msosConfig';
 import { msosDb } from './msosApp';
 
 // --- pure normalization (unit-tested; no Firebase) ---
@@ -55,39 +56,83 @@ export function normalizeJob(raw: Record<string, unknown>, id: string, nameByUid
   };
 }
 
+// --- business discovery (pure helpers + Firestore lookups) ---
+
+export interface MsosBusiness {
+  id: string;
+  name: string;
+}
+
+/**
+ * All business ids a user owns (mirrors MSOS getOwnedBusinesses): the user's own
+ * uid is always included; legacy single-business users have no list and default
+ * to [uid]. Pure + unit-tested.
+ */
+export function collectOwnedBusinessIds(uid: string, ownedBusinesses: unknown): string[] {
+  const list = Array.isArray(ownedBusinesses) ? ownedBusinesses.filter((x): x is string => typeof x === 'string' && !!x) : [];
+  return Array.from(new Set([uid, ...list]));
+}
+
+/**
+ * Choose the default selected business: a valid persisted choice, else the
+ * MSOS active business, else the first owned. Pure + unit-tested.
+ */
+export function pickDefaultBusiness(
+  ids: string[],
+  opts: { persisted?: string | null; active?: string | null },
+): string | null {
+  const has = (x?: string | null): x is string => !!x && ids.includes(x);
+  if (has(opts.persisted)) return opts.persisted;
+  if (has(opts.active)) return opts.active;
+  return ids[0] ?? null;
+}
+
+export interface MsosBusinessList {
+  businesses: MsosBusiness[];
+  activeBusinessId: string | null;
+}
+
+/** List the businesses the signed-in user owns, with display names. READ-ONLY. */
+export async function listMsosBusinesses(uid: string): Promise<MsosBusinessList> {
+  const { doc, getDoc } = await import('firebase/firestore');
+  const db = await msosDb();
+
+  let ownedBusinesses: unknown = null;
+  let activeBusinessId: string | null = null;
+  try {
+    const snap = await getDoc(doc(db, `users/${uid}`));
+    const d = (snap.data() ?? {}) as Record<string, unknown>;
+    ownedBusinesses = d.ownedBusinesses;
+    activeBusinessId = (typeof d.activeBusinessId === 'string' && d.activeBusinessId)
+      || (typeof d.businessId === 'string' && d.businessId) || null;
+  } catch {
+    // user doc not readable — fall back to the legacy single business (= uid).
+  }
+
+  const ids = collectOwnedBusinessIds(uid, ownedBusinesses);
+  const businesses = await Promise.all(ids.map(async (id): Promise<MsosBusiness> => {
+    try {
+      const s = await getDoc(doc(db, `businesses/${id}/settings/main`));
+      const name = (s.data()?.businessName as string) || '';
+      return { id, name: name || `Business ·${id.slice(-4)}` };
+    } catch {
+      return { id, name: `Business ·${id.slice(-4)}` };
+    }
+  }));
+  return { businesses, activeBusinessId };
+}
+
 export interface MsosJobsResult {
   jobs: JobRecord[];
   businessId: string;
   readAt: number;
 }
 
-/**
- * Resolve the MSOS business id for a signed-in user: explicit override, else the
- * user's `businessId`/`activeBusinessId`/first owned business, else legacy uid.
- */
-export async function resolveMsosBusinessId(uid: string): Promise<string> {
-  if (MSOS_BUSINESS_ID_OVERRIDE) return MSOS_BUSINESS_ID_OVERRIDE;
-  const { doc, getDoc } = await import('firebase/firestore');
-  const db = await msosDb();
-  try {
-    const snap = await getDoc(doc(db, `users/${uid}`));
-    const d = (snap.data() ?? {}) as Record<string, unknown>;
-    const candidate =
-      (typeof d.businessId === 'string' && d.businessId) ||
-      (typeof d.activeBusinessId === 'string' && d.activeBusinessId) ||
-      (Array.isArray(d.ownedBusinesses) && typeof d.ownedBusinesses[0] === 'string' && d.ownedBusinesses[0]);
-    if (candidate) return candidate as string;
-  } catch {
-    // users doc not readable — fall through to legacy convention.
-  }
-  return uid; // legacy: businessId == owner uid
-}
-
-/** Read + normalize all jobs for the signed-in MSOS user. READ-ONLY. */
-export async function fetchMsosJobs(uid: string): Promise<MsosJobsResult> {
+/** Read + normalize all jobs for ONE business. READ-ONLY (getDocs only). */
+export async function fetchMsosJobs(businessId: string): Promise<MsosJobsResult> {
+  if (!businessId) throw new Error('No business selected.');
   const { collection, getDocs } = await import('firebase/firestore');
   const db = await msosDb();
-  const businessId = await resolveMsosBusinessId(uid);
 
   const nameByUid = new Map<string, string>();
   try {

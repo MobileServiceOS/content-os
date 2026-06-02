@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeJob } from './msosReader';
+import { normalizeJob, collectOwnedBusinessIds, pickDefaultBusiness } from './msosReader';
 
 const names = new Map<string, string>([['uid-marcus', 'Marcus'], ['uid-luis', 'Luis']]);
 
@@ -36,5 +36,35 @@ describe('normalizeJob (MSOS Job -> JobRecord)', () => {
     expect(r.technician).toBe('Unassigned');
     expect(r.ticketUsd).toBe(0);
     expect(r.completedAt).toBe(0);
+  });
+});
+
+describe('collectOwnedBusinessIds', () => {
+  it('always includes the uid and dedupes the owned list (uid first)', () => {
+    expect(collectOwnedBusinessIds('u1', ['b2', 'b3'])).toEqual(['u1', 'b2', 'b3']);
+    expect(collectOwnedBusinessIds('u1', ['u1', 'b2', 'b2'])).toEqual(['u1', 'b2']);
+  });
+  it('legacy single-business user (no list) -> [uid]', () => {
+    expect(collectOwnedBusinessIds('u1', undefined)).toEqual(['u1']);
+    expect(collectOwnedBusinessIds('u1', null)).toEqual(['u1']);
+    expect(collectOwnedBusinessIds('u1', 'not-an-array')).toEqual(['u1']);
+  });
+  it('drops non-string entries', () => {
+    expect(collectOwnedBusinessIds('u1', ['b2', 42, '', null])).toEqual(['u1', 'b2']);
+  });
+});
+
+describe('pickDefaultBusiness', () => {
+  const ids = ['wheel-rush', 'nk-tire', 'biz3'];
+  it('prefers a valid persisted choice', () => {
+    expect(pickDefaultBusiness(ids, { persisted: 'nk-tire', active: 'wheel-rush' })).toBe('nk-tire');
+  });
+  it('falls back to the active business when persisted is missing/invalid', () => {
+    expect(pickDefaultBusiness(ids, { persisted: 'gone', active: 'biz3' })).toBe('biz3');
+    expect(pickDefaultBusiness(ids, { persisted: null, active: 'wheel-rush' })).toBe('wheel-rush');
+  });
+  it('falls back to the first business when nothing else matches', () => {
+    expect(pickDefaultBusiness(ids, { persisted: null, active: null })).toBe('wheel-rush');
+    expect(pickDefaultBusiness([], { persisted: 'x', active: 'y' })).toBeNull();
   });
 });

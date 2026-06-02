@@ -83,24 +83,64 @@ function ConnectState({ onConnect, error }: { onConnect: () => void; error: stri
 }
 
 export function JobsIntel() {
-  const { jobs, loading, needsConnect, connected, error, readAt, account, connect, disconnect, reload } = useMsosJobs();
+  const {
+    jobs, loading, needsConnect, error, readAt, account,
+    businesses, selectedBusinessId, selectBusiness, connect, disconnect, reload,
+  } = useMsosJobs();
 
   if (needsConnect) return <ConnectState onConnect={() => void connect()} error={error} />;
-  if (loading) return <div className="card"><p className="muted" style={{ margin: 0 }}>Reading MSOS jobs…</p></div>;
+
+  const selected = businesses.find((b) => b.id === selectedBusinessId);
+  const header = (
+    <div className="row between" style={{ flexWrap: 'wrap', gap: 8 }}>
+      <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        {businesses.length > 1 ? (
+          <label className="row" style={{ gap: 6, alignItems: 'center' }}>
+            <span className="muted" style={{ fontSize: '0.74rem' }}>Business</span>
+            <select
+              className="select"
+              aria-label="Select business to analyze"
+              value={selectedBusinessId ?? ''}
+              onChange={(e) => selectBusiness(e.target.value)}
+              style={{ width: 'auto', maxWidth: 260 }}
+            >
+              {businesses.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          </label>
+        ) : selected ? (
+          <span className="tag" style={{ fontWeight: 600 }}>{selected.name}</span>
+        ) : null}
+        <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)', fontSize: '0.7rem' }}>
+          ● Live MSOS · read-only{account ? ` · ${account}` : ''}{readAt ? ` · ${new Date(readAt).toLocaleTimeString()}` : ''}
+        </span>
+      </div>
+      <div className="row" style={{ gap: 8 }}>
+        <button className="btn btn-sm" onClick={reload}>Refresh</button>
+        <button className="btn btn-sm" onClick={() => void disconnect()}>Disconnect</button>
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return <div className="stack" style={{ gap: 16 }}>{header}<div className="card"><p className="muted" style={{ margin: 0 }}>Reading MSOS jobs…</p></div></div>;
+  }
   if (error) {
     return (
-      <div className="card stack">
-        <SectionTitle accent="var(--danger)">Couldn't read MSOS</SectionTitle>
-        <p className="muted" style={{ margin: 0, fontSize: '0.84rem' }}>{error}</p>
-        <div className="row" style={{ gap: 8 }}>
-          <button className="btn btn-sm" onClick={reload}>Retry</button>
-          <button className="btn btn-sm" onClick={() => void disconnect()}>Switch account</button>
+      <div className="stack" style={{ gap: 16 }}>
+        {header}
+        <div className="card stack">
+          <SectionTitle accent="var(--danger)">Couldn't read MSOS</SectionTitle>
+          <p className="muted" style={{ margin: 0, fontSize: '0.84rem' }}>{error}</p>
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn btn-sm" onClick={reload}>Retry</button>
+            <button className="btn btn-sm" onClick={() => void disconnect()}>Switch account</button>
+          </div>
         </div>
       </div>
     );
   }
-  if (connected && jobs.length === 0) {
-    return <div className="card"><p className="muted" style={{ margin: 0 }}>Connected to MSOS{account ? ` as ${account}` : ''} — no jobs found for this business yet.</p></div>;
+  if (jobs.length === 0) {
+    return <div className="stack" style={{ gap: 16 }}>{header}<div className="card"><p className="muted" style={{ margin: 0 }}>No jobs found for {selected?.name ?? 'this business'} yet.</p></div></div>;
   }
 
   const k = jobsKpis(jobs);
@@ -109,15 +149,7 @@ export function JobsIntel() {
 
   return (
     <div className="stack" style={{ gap: 16 }}>
-      <div className="row between" style={{ flexWrap: 'wrap', gap: 8 }}>
-        <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)', fontSize: '0.7rem' }}>
-          ● Live MSOS data · read-only{account ? ` · ${account}` : ''}{readAt ? ` · synced ${new Date(readAt).toLocaleTimeString()}` : ''}
-        </span>
-        <div className="row" style={{ gap: 8 }}>
-          <button className="btn btn-sm" onClick={reload}>Refresh</button>
-          <button className="btn btn-sm" onClick={() => void disconnect()}>Disconnect</button>
-        </div>
-      </div>
+      {header}
 
       {/* KPIs */}
       <div className="grid grid-3">

@@ -11,9 +11,13 @@ signed-in user. Chosen mechanism: **Option B (client-side, your identity)** — 
 - You **sign in with the same Google account** you use for MSOS (an in-app
   "Connect MSOS account" button → Google popup). This creates a separate,
   read-only MSOS session in the browser.
-- It resolves your business id from `users/{uid}` and reads
-  `businesses/{businessId}/jobs` + `members`, **governed entirely by MSOS's own
-  Firestore security rules** (`isMemberOfBusiness`).
+- It lists the businesses you own (`users/{uid}.ownedBusinesses`, names from each
+  `businesses/{id}/settings/main.businessName`) and shows a **Business Selector**
+  when you have more than one (Wheel Rush, N&K Tire, future customers). The
+  Director analyzes the **selected business only**; your choice is remembered.
+  No business is hardcoded.
+- For the selected business it reads `businesses/{businessId}/jobs` + `members`,
+  **governed entirely by MSOS's own Firestore security rules** (`isMemberOfBusiness`).
 - **No service account, no key to leak, no write paths.** Nothing is copied into
   Content OS — jobs are read into memory for the current view only (no duplicate
   database, no duplicate records). The tab shows a Connect button until you sign

@@ -22,6 +22,3 @@ export const MSOS_WEB_CONFIG: MsosWebConfig = {
   messagingSenderId: env.VITE_MSOS_MESSAGING_SENDER_ID ?? '77527561910',
   appId: env.VITE_MSOS_APP_ID ?? '1:77527561910:web:4a0c65c0203d403f4f5817',
 };
-
-/** Optional explicit business id override; otherwise resolved from users/{uid}. */
-export const MSOS_BUSINESS_ID_OVERRIDE = env.VITE_MSOS_BUSINESS_ID ?? '';
