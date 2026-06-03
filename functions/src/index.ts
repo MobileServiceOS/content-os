@@ -6,7 +6,7 @@
 import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import * as logger from 'firebase-functions/logger';
-import { defineSecret } from 'firebase-functions/params';
+import { defineSecret, defineString } from 'firebase-functions/params';
 import { initializeApp } from 'firebase-admin/app';
 import { assertMember } from './auth';
 import { buildPrompt } from './prompts';
@@ -22,6 +22,7 @@ import {
 import * as gbp from './gbp';
 import * as social from './social';
 import { runAutoSync } from './autoSync';
+import { runWeeklyDigest } from './digest';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -39,6 +40,11 @@ const scSecrets = [SC_OAUTH_CLIENT_ID, SC_OAUTH_CLIENT_SECRET, SC_REDIRECT_URI];
 const TIKTOK_CLIENT_KEY = defineSecret('TIKTOK_CLIENT_KEY');
 const TIKTOK_CLIENT_SECRET = defineSecret('TIKTOK_CLIENT_SECRET');
 const socialSecrets = [TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET];
+// Weekly digest email (Resend). API key is a secret (set before deploy);
+// the From address is a plain param (default = Resend's test sender, which
+// works without domain verification — override once your domain is verified).
+const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
+const DIGEST_FROM = defineString('DIGEST_FROM', { default: 'Content OS <onboarding@resend.dev>' });
 function socialCreds(platform: string): { clientId: string; secret: string } {
   if (platform === 'tiktok') return { clientId: TIKTOK_CLIENT_KEY.value(), secret: TIKTOK_CLIENT_SECRET.value() };
   throw new HttpsError('failed-precondition', `Platform ${platform} is not configured.`);
@@ -301,5 +307,15 @@ export const nightlySync = onSchedule(
       tiktokKey: TIKTOK_CLIENT_KEY.value(), tiktokSecret: TIKTOK_CLIENT_SECRET.value(),
     });
     logger.info('nightlySync complete', summary);
+  },
+);
+
+// Monday 08:00 ET: email each active owner their weekly brief from the cockpit
+// snapshot. Skips owners with no email or a snapshot older than 2 weeks.
+export const weeklyDigest = onSchedule(
+  { schedule: 'every monday 08:00', timeZone: 'America/New_York', secrets: [RESEND_API_KEY], timeoutSeconds: 540 },
+  async () => {
+    const summary = await runWeeklyDigest(RESEND_API_KEY.value(), DIGEST_FROM.value(), Date.now());
+    logger.info('weeklyDigest complete', summary);
   },
 );
