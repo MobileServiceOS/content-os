@@ -145,7 +145,7 @@ export default function Dashboard() {
 
       {/* The hero: do these 3 today */}
       <div className="card stack" style={{ marginTop: 16 }}>
-        <h2 style={{ margin: 0 }}><span className="sec-dot" style={{ ['--accent' as string]: 'var(--c-violet)' }} />Do these 3 today</h2>
+        <h2 style={{ margin: 0 }}><span className="sec-dot" style={{ ['--accent' as string]: 'var(--c-violet)' }} />{moves.length > 0 ? `Do ${moves.length === 1 ? 'this' : `these ${moves.length}`} today` : 'Today’s moves'}</h2>
         {moves.length === 0 ? (
           <p className="muted" style={{ margin: 0, fontSize: '0.86rem' }}>
             {jobs.length === 0
