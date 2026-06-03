@@ -37,7 +37,7 @@ interface Preview {
   predictedViralScore?: number;
 }
 
-export default function Media() {
+export default function Media({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { items, save, remove } = useMediaItems();
@@ -87,7 +87,7 @@ export default function Media() {
 
   return (
     <>
-      <PageHeader title="Media Studio" subtitle="Images, thumbnails & video posters" />
+      {!embedded && <PageHeader title="Media Studio" subtitle="Images, thumbnails & video posters" />}
 
       <div className="card stack">
         <div className="grid grid-2">

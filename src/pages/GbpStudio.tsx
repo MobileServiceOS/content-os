@@ -21,7 +21,7 @@ import type { GenerationCost } from '../lib/ai/cost';
 
 const emptyRecent = (): RecentByType => ({ hook: [], caption: [], cta: [], script: [], review: [], reply: [] });
 
-export default function GbpStudio() {
+export default function GbpStudio({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId, role } = useBusiness();
   const { user } = useAuth();
   const { posts, create, setApproval, remove } = useGbpPosts();
@@ -72,7 +72,7 @@ export default function GbpStudio() {
 
   return (
     <>
-      <PageHeader title="GBP Studio" subtitle="Compliant Google Business Profile posts" />
+      {!embedded && <PageHeader title="GBP Studio" subtitle="Compliant Google Business Profile posts" />}
 
       <div className="card stack">
         <div className="grid grid-2">

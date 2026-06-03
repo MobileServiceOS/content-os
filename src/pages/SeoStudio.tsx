@@ -27,7 +27,7 @@ const TYPES: { value: SeoContentType; label: string }[] = [
 ];
 const emptyRecent = (): RecentByType => ({ hook: [], caption: [], cta: [], script: [], review: [], reply: [] });
 
-export default function SeoStudio() {
+export default function SeoStudio({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId, role } = useBusiness();
   const { user } = useAuth();
   const { items, create, setApproval, remove } = useSeoContent();
@@ -77,7 +77,7 @@ export default function SeoStudio() {
 
   return (
     <>
-      <PageHeader title="Local SEO Studio" subtitle="Pages, FAQs & AI-search content" />
+      {!embedded && <PageHeader title="Local SEO Studio" subtitle="Pages, FAQs & AI-search content" />}
 
       <div className="card stack">
         <div className="grid grid-2">
