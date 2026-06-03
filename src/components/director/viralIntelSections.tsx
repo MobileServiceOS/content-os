@@ -17,6 +17,10 @@ import {
   contentGaps, dailyRecommendations, predictContentScore,
   type HookRow, type CityIntel, type ServiceIntel, type ScoreBand,
 } from '../../lib/director/viralIntel';
+import {
+  contentRoi, roiByHookCategory, totalInfluenced, revenuePerThousandViews,
+  type ContentRoiRow,
+} from '../../lib/director/contentRoi';
 import { SectionTitle, RankTable, type Col } from './shared';
 
 const BAND_COLOR: Record<ScoreBand, string> = { Low: 'var(--danger)', Medium: 'var(--warning)', High: 'var(--c-blue)', Viral: 'var(--c-emerald)' };
@@ -51,6 +55,7 @@ export function ViralIntelligence() {
   const cities = cityIntelligence(tiktok, jobs, vocab);
   const services = serviceIntelligence(tiktok, jobs, vocab);
   const gaps = contentGaps(tiktok, jobs, vocab);
+  const roi = contentRoi(tiktok, jobs, vocab);
 
   const sources = (
     <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
@@ -90,6 +95,12 @@ export function ViralIntelligence() {
     { head: 'Eng', cell: (s) => pct(s.engagement) },
     { head: 'Conv. opp', align: 'right', cell: (s) => <strong>{s.conversionOpportunity}/10</strong> },
   ];
+  const roiCols: Col<ContentRoiRow>[] = [
+    { head: 'Content', align: 'left', cell: (r) => <span style={{ display: 'inline-block', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>“{r.caption}”</span> },
+    { head: 'City', cell: (r) => r.city ?? '—' },
+    { head: 'Views', cell: (r) => compact(r.views) },
+    { head: 'Influenced $', align: 'right', cell: (r) => <strong>{money(r.influencedRevenue)}</strong> },
+  ];
 
   return (
     <div className="stack" style={{ gap: 16 }}>
@@ -102,6 +113,22 @@ export function ViralIntelligence() {
 
       {/* 6. Content Score (top — the action) */}
       <ContentScorer tiktok={tiktok} vocab={vocab} />
+
+      {/* Content ROI — what your posts earned (Wave 3 measurement) */}
+      {roi.length > 0 && totalInfluenced(roi) > 0 && (
+        <div className="card stack">
+          <SectionTitle accent="var(--c-emerald)">Content ROI — what your posts earned</SectionTitle>
+          <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span className="tag" style={{ borderColor: 'var(--success)', color: 'var(--success)', fontWeight: 800, fontSize: '0.9rem' }}>{money(totalInfluenced(roi))} influenced</span>
+            <span className="tag" style={{ fontSize: '0.8rem' }}>{money(revenuePerThousandViews(roi))} / 1K views</span>
+            {roiByHookCategory(roi)[0] && (
+              <span className="muted" style={{ fontSize: '0.8rem' }}>Top-earning style: <strong>{cap(roiByHookCategory(roi)[0].category)}</strong> ({money(roiByHookCategory(roi)[0].influencedRevenue)})</span>
+            )}
+          </div>
+          <RankTable rows={roi.slice(0, 8)} cols={roiCols} empty="No attributed content yet." />
+          <p className="muted" style={{ margin: 0, fontSize: '0.72rem' }}>Directional: each city's real MSOS revenue split across the videos that mention it, by view share. A signal of which content tracks revenue — not a causal claim.</p>
+        </div>
+      )}
 
       {/* 5. Daily Recommendations */}
       <div className="card stack">
