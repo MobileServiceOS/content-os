@@ -9,7 +9,7 @@ const KIND_LABEL: Record<QueueKind, string> = { content: 'Content', gbp: 'GBP', 
 const KIND_COLOR: Record<QueueKind, string> = { content: 'var(--c-blue)', gbp: 'var(--c-amber)', seo: 'var(--c-cyan)' };
 type Filter = 'all' | QueueKind;
 
-export default function ApprovalQueue() {
+export default function ApprovalQueue({ embedded = false }: { embedded?: boolean } = {}) {
   const { items, approve, reject, approveAll, edit, approveAndSchedule } = useApprovalQueue();
   const [filter, setFilter] = useState<Filter>('all');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -35,17 +35,19 @@ export default function ApprovalQueue() {
 
   return (
     <>
-      <PageHeader
-        title="Approval Queue"
-        subtitle={`${items.length} awaiting approval`}
-        actions={shown.length > 0 ? (
-          <RoleGate action="content.approve">
-            <button className="btn btn-primary btn-sm" onClick={() => void approveAll(filter === 'all' ? undefined : filter)}>
-              Approve {filter === 'all' ? 'all' : KIND_LABEL[filter]}
-            </button>
-          </RoleGate>
-        ) : undefined}
-      />
+      {!embedded && (
+        <PageHeader
+          title="Approval Queue"
+          subtitle={`${items.length} awaiting approval`}
+          actions={shown.length > 0 ? (
+            <RoleGate action="content.approve">
+              <button className="btn btn-primary btn-sm" onClick={() => void approveAll(filter === 'all' ? undefined : filter)}>
+                Approve {filter === 'all' ? 'all' : KIND_LABEL[filter]}
+              </button>
+            </RoleGate>
+          ) : undefined}
+        />
+      )}
 
       <div className="row" style={{ marginBottom: 4 }}>
         {FILTERS.map((f) => (

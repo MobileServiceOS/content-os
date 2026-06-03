@@ -17,7 +17,7 @@ import type { CalendarItem, ContentStatus } from '../types/models';
 type View = 'month' | 'week' | 'day';
 interface Payload { kind: 'cal' | 'content'; id: string; title?: string; status?: ContentStatus }
 
-export default function Calendar() {
+export default function Calendar({ embedded = false }: { embedded?: boolean } = {}) {
   const { role } = useBusiness();
   const editable = can('calendar.edit', role);
   const { items, create, remove, reschedule, setStatus } = useCalendarItems();
@@ -91,7 +91,7 @@ export default function Calendar() {
 
   return (
     <>
-      <PageHeader title="Content Calendar" subtitle="Plan & schedule — drag to reschedule" />
+      {!embedded && <PageHeader title="Content Calendar" subtitle="Plan & schedule — drag to reschedule" />}
 
       <div className="card stack">
         <div className="row between">

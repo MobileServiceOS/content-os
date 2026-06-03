@@ -20,6 +20,7 @@ import Tasks from './pages/Tasks';
 import ApprovalQueue from './pages/ApprovalQueue';
 import Library from './pages/Library';
 import Calendar from './pages/Calendar';
+import ContentPipeline from './pages/ContentPipeline';
 import BrandSettings from './pages/BrandSettings';
 import Fingerprints from './pages/Fingerprints';
 import NotFound from './pages/NotFound';
@@ -52,6 +53,8 @@ export default function App() {
             <Route path="/seo" element={<SeoStudio />} />
             <Route path="/engagement" element={<Engagement />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/pipeline" element={<ContentPipeline />} />
+            {/* Standalone routes kept for deep links; the nav points to /pipeline. */}
             <Route path="/approvals" element={<ApprovalQueue />} />
             <Route path="/library" element={<Library />} />
             <Route path="/calendar" element={<Calendar />} />

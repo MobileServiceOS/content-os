@@ -31,9 +31,7 @@ const ITEMS: Item[] = [
   { to: '/gbp', label: 'GBP', icon: '📍', creatorsOnly: true, group: 'Local' },
   { to: '/seo', label: 'SEO', icon: '🔎', creatorsOnly: true, group: 'Local' },
   { to: '/tasks', label: 'Tasks', icon: '☑️', group: 'Manage' },
-  { to: '/approvals', label: 'Approvals', icon: '🛡️', group: 'Manage' },
-  { to: '/library', label: 'Library', icon: '📚', group: 'Manage' },
-  { to: '/calendar', label: 'Calendar', icon: '🗓️', group: 'Manage' },
+  { to: '/pipeline', label: 'Content Pipeline', icon: '🗂️', group: 'Manage' },
   { to: '/brand', label: 'Brand', icon: '🎨', group: 'Settings' },
 ];
 

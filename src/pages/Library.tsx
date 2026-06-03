@@ -24,7 +24,7 @@ const STATUS_COLOR: Record<ContentStatus, string> = {
   draft: 'var(--text-dim)', approved: 'var(--c-emerald)', scheduled: 'var(--c-amber)', posted: 'var(--c-blue)',
 };
 
-export default function Library() {
+export default function Library({ embedded = false }: { embedded?: boolean } = {}) {
   const { items, loading, update, remove, duplicate, setStatus, archive } = useContentItems();
   const { linkFromContentItem } = usePostPerformance();
   const [search, setSearch] = useState('');
@@ -48,7 +48,7 @@ export default function Library() {
 
   return (
     <>
-      <PageHeader title="Content Library" subtitle={`${items.filter((i) => !i.archived).length} items`} />
+      {!embedded && <PageHeader title="Content Library" subtitle={`${items.filter((i) => !i.archived).length} items`} />}
 
       <div className="card stack">
         <TextField label="Search" value={search} onChange={setSearch} placeholder="Search title, content, tags" />
