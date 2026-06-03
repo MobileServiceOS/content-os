@@ -27,7 +27,7 @@ interface Generated {
   cost: GenerationCost;
 }
 
-export default function ReviewResponse() {
+export default function ReviewResponse({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
@@ -75,7 +75,7 @@ export default function ReviewResponse() {
 
   return (
     <>
-      <PageHeader title="Review Response" subtitle="Reply to customer reviews" />
+      {!embedded && <PageHeader title="Review Response" subtitle="Reply to customer reviews" />}
 
       <div className="card stack">
         <TextArea label="Review text" value={reviewText} onChange={setReviewText} placeholder="Paste the customer's review" />

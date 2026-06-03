@@ -34,7 +34,7 @@ interface Generated {
   cost: GenerationCost;
 }
 
-export default function SocialReply() {
+export default function SocialReply({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
@@ -77,7 +77,7 @@ export default function SocialReply() {
 
   return (
     <>
-      <PageHeader title="Social Reply" subtitle="Reply to comments & DMs" />
+      {!embedded && <PageHeader title="Social Reply" subtitle="Reply to comments & DMs" />}
 
       <div className="card stack">
         <TextArea label="Comment or DM" value={message} onChange={setMessage} placeholder="Paste the comment or message" />

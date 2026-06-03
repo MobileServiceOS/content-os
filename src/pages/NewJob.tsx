@@ -33,7 +33,7 @@ interface Variant {
   busy: boolean;
 }
 
-export default function NewJob() {
+export default function NewJob({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { create: createAsset } = useContentAssets();
@@ -128,7 +128,7 @@ export default function NewJob() {
 
   return (
     <>
-      <PageHeader title="New Job → Distribute" subtitle="One job → one asset → all platforms" />
+      {!embedded && <PageHeader title="New Job → Distribute" subtitle="One job → one asset → all platforms" />}
 
       <div className="card stack">
         <div className="grid grid-2">

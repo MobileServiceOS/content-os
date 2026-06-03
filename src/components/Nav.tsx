@@ -1,8 +1,10 @@
 // Navigation. Desktop: a left sidebar with grouped links. Mobile: a top brand
-// bar + a scrollable bottom link bar (the sidebar flattens via CSS). Generator
-// links are hidden from viewers. Wave 0 subtraction: Fingerprints (dev tool) and
-// Engage (thin duplicate of Social) are removed from the nav; their routes and
-// pages remain reachable by direct URL — see App.tsx.
+// bar + a scrollable bottom link bar (the sidebar flattens via CSS). Wave 0
+// subtraction collapsed the app to one product: the content studios (Generator,
+// Script, Repurpose, New Job, GBP, SEO, Media, Review, Social) now live as tabs
+// inside the Marketing Director, and Approvals/Calendar/Library merged into the
+// Content Pipeline. Their routes still resolve by direct URL — see App.tsx.
+// The creatorsOnly/ownerOnly filter below is retained for future role-gated links.
 import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -21,9 +23,6 @@ interface Item {
 const ITEMS: Item[] = [
   { to: '/', label: 'Home', icon: '🏠' },
   { to: '/director', label: 'Marketing Director', icon: '🧭', group: 'Director' },
-  { to: '/new-job', label: 'New Job', icon: '⚡', creatorsOnly: true, group: 'Create' },
-  { to: '/review', label: 'Review', icon: '⭐', creatorsOnly: true, group: 'Create' },
-  { to: '/social', label: 'Social', icon: '💬', creatorsOnly: true, group: 'Create' },
   { to: '/tasks', label: 'Tasks', icon: '☑️', group: 'Manage' },
   { to: '/pipeline', label: 'Content Pipeline', icon: '🗂️', group: 'Manage' },
   { to: '/brand', label: 'Brand', icon: '🎨', group: 'Settings' },

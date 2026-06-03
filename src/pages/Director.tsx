@@ -15,6 +15,7 @@ import { GbpIntelligence } from '../components/director/gbpSections';
 import { TikTokIntelligence } from '../components/director/tiktokSections';
 import { ViralIntelligence } from '../components/director/viralIntelSections';
 import { CreateStudio } from '../components/director/createStudio';
+import { ReplyStudio } from '../components/director/replyStudio';
 import { AutomationCenter } from '../components/director/automationSections';
 import GbpStudio from './GbpStudio';
 import SeoStudio from './SeoStudio';
@@ -45,7 +46,7 @@ const TABS: { key: Key; label: string; icon: string; render: () => ReactNode }[]
   { key: 'viralintel', label: 'Viral Intelligence', icon: '🧠', render: () => <ViralIntelligence /> },
   { key: 'create', label: 'Create', icon: '✍️', render: () => <CreateStudio /> },
   { key: 'viral', label: 'Viral Engine', icon: '🔥', render: () => <ViralEngine /> },
-  { key: 'reviewintel', label: 'Review Intel', icon: '💬', render: () => <ReviewIntel /> },
+  { key: 'reviewintel', label: 'Review Intel', icon: '💬', render: () => <WithCreate analysis={<ReviewIntel />} studio={<ReplyStudio />} label="Draft a reply" /> },
   { key: 'seo', label: 'SEO (Search Console)', icon: '🔎', render: () => <WithCreate analysis={<SeoConsole />} studio={<SeoStudio embedded />} label="Create SEO content" /> },
   { key: 'gbp', label: 'GBP Intelligence', icon: '📍', render: () => <WithCreate analysis={<GbpIntelligence />} studio={<GbpStudio embedded />} label="Create a GBP post" /> },
   { key: 'tiktok', label: 'TikTok', icon: '🎵', render: () => <TikTokIntelligence /> },

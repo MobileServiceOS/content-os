@@ -8,17 +8,19 @@ import type { ReactNode } from 'react';
 import ContentGenerator from '../../pages/ContentGenerator';
 import ScriptWriter from '../../pages/ScriptWriter';
 import Repurpose from '../../pages/Repurpose';
+import NewJob from '../../pages/NewJob';
 
-type Tool = 'caption' | 'script' | 'repurpose';
+type Tool = 'newjob' | 'caption' | 'script' | 'repurpose';
 
 const TOOLS: { key: Tool; label: string; icon: string; render: () => ReactNode }[] = [
+  { key: 'newjob', label: 'New Job → Posts', icon: '⚡', render: () => <NewJob embedded /> },
   { key: 'caption', label: 'Caption / Hook', icon: '✨', render: () => <ContentGenerator embedded /> },
   { key: 'script', label: 'Script', icon: '🎬', render: () => <ScriptWriter embedded /> },
   { key: 'repurpose', label: 'Repurpose', icon: '♻️', render: () => <Repurpose embedded /> },
 ];
 
 export function CreateStudio() {
-  const [active, setActive] = useState<Tool>('caption');
+  const [active, setActive] = useState<Tool>('newjob');
   const current = TOOLS.find((t) => t.key === active) ?? TOOLS[0];
 
   return (
