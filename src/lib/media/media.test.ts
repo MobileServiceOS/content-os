@@ -40,9 +40,10 @@ describe('mock video provider', () => {
 });
 
 describe('imageProviderFor', () => {
-  it('defaults to mock and switches to openai', () => {
+  it('always resolves to mock (external image/video providers were removed)', () => {
     expect(imageProviderFor(brand).name).toBe('mock');
-    expect(imageProviderFor({ ...brand, imageProvider: 'openai' }).name).toBe('openai');
+    // A stored imageProvider='openai' stays mock — the generateImage function is gone.
+    expect(imageProviderFor({ ...brand, imageProvider: 'openai' }).name).toBe('mock');
   });
   it('exposes the singleton', () => {
     expect(openaiImageProvider.name).toBe('openai');

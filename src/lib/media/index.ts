@@ -3,9 +3,7 @@
 import type { ImageProvider, VideoProvider } from '../../types/media';
 import type { BrandSettings } from '../../types/models';
 import { mockImageProvider } from './mockImageProvider';
-import { openaiImageProvider } from './openaiImageProvider';
 import { mockVideoProvider } from './mockVideoProvider';
-import { higgsfieldVideoProvider } from './higgsfieldVideoProvider';
 
 export { mockImageProvider, MockImageProvider } from './mockImageProvider';
 export { openaiImageProvider, OpenAIImageProvider } from './openaiImageProvider';
@@ -13,10 +11,14 @@ export { mockVideoProvider, MockVideoProvider } from './mockVideoProvider';
 export { higgsfieldVideoProvider, HiggsfieldVideoProvider } from './higgsfieldVideoProvider';
 export { placeholderSvgDataUrl } from './svg';
 
-export function imageProviderFor(brand: BrandSettings | null): ImageProvider {
-  return brand?.imageProvider === 'openai' ? openaiImageProvider : mockImageProvider;
+// Mock-only: the serverless generateImage/generateVideo functions were removed
+// (no OpenAI/Higgsfield keys configured), so those providers are unwired. Images
+// are placeholder SVGs; video is mock. The `_brand` arg is kept for signature
+// stability (callers pass brand) and a future re-wire.
+export function imageProviderFor(_brand: BrandSettings | null): ImageProvider {
+  return mockImageProvider;
 }
 
-export function videoProviderFor(brand: BrandSettings | null): VideoProvider {
-  return brand?.videoProvider === 'higgsfield' ? higgsfieldVideoProvider : mockVideoProvider;
+export function videoProviderFor(_brand: BrandSettings | null): VideoProvider {
+  return mockVideoProvider;
 }

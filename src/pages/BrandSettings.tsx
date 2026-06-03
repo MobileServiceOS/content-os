@@ -3,7 +3,7 @@
 // brandSettings/main and immediately affects generation (BusinessContext subscribes).
 import { useEffect, useState } from 'react';
 import PageHeader from '../components/PageHeader';
-import { TextField, TextArea, SelectField } from '../components/ui/Field';
+import { TextField, TextArea } from '../components/ui/Field';
 import { useBusiness } from '../context/BusinessContext';
 import { useBrandSettings } from '../hooks/useBrandSettings';
 import { can } from '../lib/permissions';
@@ -92,42 +92,13 @@ export default function BrandSettings() {
       </div>
 
       <div className="card stack" style={{ marginTop: 16 }}>
-        <h2 style={{ margin: 0 }}>Generation provider</h2>
-        <SelectField
-          label="Provider"
-          value={draft.provider ?? 'mock'}
-          onChange={(v) => set({ provider: v as Brand['provider'] })}
-          options={[
-            { value: 'mock', label: 'Template (no AI — default)' },
-            { value: 'claude', label: 'Claude' },
-            { value: 'openai', label: 'OpenAI' },
-            { value: 'gemini', label: 'Gemini' },
-          ]}
-        />
-        <p className="muted" style={{ margin: 0, fontSize: '0.72rem' }}>
-          AI providers route through the secure serverless function (each needs its API key set
-          + the function deployed — see SETUP.md). All providers run through the same uniqueness
-          + brand checks. Without a configured key, generation will error and you can switch back
-          to Template.
+        <h2 style={{ margin: 0 }}>Generation</h2>
+        <p className="muted" style={{ margin: 0, fontSize: '0.78rem' }}>
+          Content, images, and video are generated from your brand voice using templates and the
+          uniqueness engine. The external AI providers (Claude/OpenAI/Gemini/Higgsfield) were
+          removed — no keys were ever configured — so there are no placeholder integrations to
+          misconfigure.
         </p>
-        <SelectField
-          label="Image provider"
-          value={draft.imageProvider ?? 'mock'}
-          onChange={(v) => set({ imageProvider: v as Brand['imageProvider'] })}
-          options={[
-            { value: 'mock', label: 'Placeholder (SVG — default)' },
-            { value: 'openai', label: 'OpenAI Images (needs OPENAI_API_KEY)' },
-          ]}
-        />
-        <SelectField
-          label="Video provider"
-          value={draft.videoProvider ?? 'mock'}
-          onChange={(v) => set({ videoProvider: v as Brand['videoProvider'] })}
-          options={[
-            { value: 'mock', label: 'Placeholder poster (default)' },
-            { value: 'higgsfield', label: 'Higgsfield (needs HIGGSFIELD_CREDENTIALS)' },
-          ]}
-        />
       </div>
 
       <div className="card stack" style={{ marginTop: 16 }}>

@@ -44,12 +44,12 @@ describe('provider layer', () => {
     expect(repurpose.result.hooks).toHaveLength(5);
   });
 
-  it('providerFor resolves the right provider per business', () => {
+  it('always resolves to mock (LLM providers were removed — templates only)', () => {
     expect(providerFor(brand, 'b1').name).toBe('mock');
-    expect(providerFor({ ...brand, provider: 'claude' }, 'b1').name).toBe('claude');
-    expect(providerFor({ ...brand, provider: 'openai' }, 'b1').name).toBe('openai');
-    expect(providerFor({ ...brand, provider: 'gemini' }, 'b1').name).toBe('gemini');
-    // Falls back to mock when no tenant is resolved yet.
-    expect(providerFor({ ...brand, provider: 'claude' }, null).name).toBe('mock');
+    // Even if a stored brand still carries an old provider value, it stays mock —
+    // the serverless `generate` function is gone, so the LLM path is unwired.
+    expect(providerFor({ ...brand, provider: 'claude' }, 'b1').name).toBe('mock');
+    expect(providerFor({ ...brand, provider: 'openai' }, 'b1').name).toBe('mock');
+    expect(providerFor({ ...brand, provider: 'gemini' }, null).name).toBe('mock');
   });
 });
