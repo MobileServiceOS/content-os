@@ -7,6 +7,7 @@ import { setDoc } from 'firebase/firestore';
 import { cockpitSnapshotDoc } from '../firebase/paths';
 import type { OwnerSummary } from './ownerExecutive';
 import type { CockpitMove, CockpitAlert } from './homeCockpit';
+import { totalInfluenced, revenuePerThousandViews, type ContentRoiRow } from './contentRoi';
 
 export interface CockpitSnapshot {
   businessId: string;       // required for the sameTenant() rule
@@ -20,13 +21,16 @@ export interface CockpitSnapshot {
   };
   moves: { text: string; why: string; impact: CockpitMove['impact']; dollars: number | null }[];
   alerts: { text: string; tone: CockpitAlert['tone'] }[];
+  // Content→revenue attribution (directional). Null when no TikTok/content data.
+  contentRoi: { influenced: number; perThousandViews: number } | null;
 }
 
 export function buildSnapshot(args: {
   businessId: string; businessName: string; ownerEmail: string | null; now: number;
-  summary: OwnerSummary; moves: CockpitMove[]; alerts: CockpitAlert[];
+  summary: OwnerSummary; moves: CockpitMove[]; alerts: CockpitAlert[]; roi: ContentRoiRow[];
 }): CockpitSnapshot {
-  const { businessId, businessName, ownerEmail, now, summary, moves, alerts } = args;
+  const { businessId, businessName, ownerEmail, now, summary, moves, alerts, roi } = args;
+  const influenced = totalInfluenced(roi);
   return {
     businessId, businessName, ownerEmail, generatedAt: now,
     money: {
@@ -36,6 +40,7 @@ export function buildSnapshot(args: {
     },
     moves: moves.map((m) => ({ text: m.text, why: m.why, impact: m.impact, dollars: m.dollars })),
     alerts: alerts.map((a) => ({ text: a.text, tone: a.tone })),
+    contentRoi: influenced > 0 ? { influenced, perThousandViews: revenuePerThousandViews(roi) } : null,
   };
 }
 

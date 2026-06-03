@@ -18,6 +18,7 @@ export interface DigestSnapshot {
   };
   moves: { text: string; why: string; impact: string; dollars: number | null }[];
   alerts: { text: string; tone: string }[];
+  contentRoi?: { influenced: number; perThousandViews: number } | null;
 }
 
 const usd = (n: number): string => `$${Math.round(n).toLocaleString('en-US')}`;
@@ -72,6 +73,10 @@ export function renderDigestHtml(s: DigestSnapshot): string {
         </tr></table>
 
         ${alerts}
+
+        ${s.contentRoi && s.contentRoi.influenced > 0
+          ? `<div style="margin:16px 0;padding:12px 14px;background:#ecfdf5;border-radius:8px;font-size:14px;color:#065f46;">📈 Your content influenced <strong>${usd(s.contentRoi.influenced)}</strong> of revenue · ${usd(s.contentRoi.perThousandViews)} per 1K views</div>`
+          : ''}
 
         <h2 style="font-size:16px;color:#0f172a;margin:18px 0 0;">Do these ${s.moves.length || ''} this week</h2>
         ${moves}

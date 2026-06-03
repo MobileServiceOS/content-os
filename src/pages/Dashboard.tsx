@@ -17,6 +17,7 @@ import { parseReviews, analyzeReviews, type ReviewVocab } from '../lib/director/
 import { predictContentScore, type ScoreBand } from '../lib/director/viralIntel';
 import { cockpitMoves, cockpitAlerts, type CockpitMove, type AlertTone } from '../lib/director/homeCockpit';
 import { buildSnapshot, persistCockpitSnapshot } from '../lib/director/cockpitSnapshot';
+import { contentRoi, totalInfluenced, revenuePerThousandViews } from '../lib/director/contentRoi';
 import type { SocialVocab } from '../lib/director/social/types';
 
 const REVIEW_STORE_KEY = 'reviewIntel.text';
@@ -85,6 +86,8 @@ export default function Dashboard() {
   const summary = useMemo(() => ownerSummary(jobs, now), [jobs, now]);
   const moves = useMemo(() => cockpitMoves(input), [jobs, tk.data, sc.data, reviews, vocab, now]);
   const alerts = useMemo(() => cockpitAlerts(input), [jobs, tk.data, sc.data, reviews, vocab, now]);
+  const roi = useMemo(() => contentRoi(tk.data, jobs, vocab), [tk.data, jobs, vocab]);
+  const roiInfluenced = totalInfluenced(roi);
 
   // Persist the cockpit snapshot (throttled to ~once/6h) so the Monday digest
   // function can email these numbers — the server can't read MSOS directly.
@@ -92,10 +95,10 @@ export default function Dashboard() {
     if (!businessId || needsConnect || loading || jobs.length === 0) return;
     const snap = buildSnapshot({
       businessId, businessName: brand?.businessName ?? 'Your business',
-      ownerEmail: user?.email ?? null, now, summary, moves, alerts,
+      ownerEmail: user?.email ?? null, now, summary, moves, alerts, roi,
     });
     void persistCockpitSnapshot(snap).catch(() => {}); // best-effort; denied until cockpit rules deploy
-  }, [businessId, needsConnect, loading, jobs.length, summary, moves, alerts, brand, user, now]);
+  }, [businessId, needsConnect, loading, jobs.length, summary, moves, alerts, roi, brand, user, now]);
 
   const title = brand?.businessName ?? 'Home';
 
@@ -144,6 +147,16 @@ export default function Dashboard() {
           accent={g != null && g < 0 ? 'var(--danger)' : 'var(--success)'} sub={g == null ? 'no prior-month data' : undefined} />
         <Tile label="Best city" value={summary.bestCity ?? '—'} accent="var(--c-violet)" sub={summary.bestService ? `Top service: ${summary.bestService}` : undefined} />
       </div>
+
+      {/* Content ROI — the renewal number, on the first screen */}
+      {roiInfluenced > 0 && (
+        <Link to="/director" className="card" style={{ marginTop: 12, display: 'block', textDecoration: 'none', ['--accent' as string]: 'var(--c-emerald)' }}>
+          <div className="row between" style={{ flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: '0.92rem' }}>📈 Your content influenced <strong style={{ color: 'var(--success)' }}>{money(roiInfluenced)}</strong> of revenue <span className="muted">· {money(revenuePerThousandViews(roi))} per 1K views</span></span>
+            <span className="muted" style={{ fontSize: '0.74rem' }}>See Content ROI →</span>
+          </div>
+        </Link>
+      )}
 
       {/* Alerts */}
       {alerts.length > 0 && (
