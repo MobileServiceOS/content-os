@@ -14,13 +14,15 @@ import { SeoConsole } from '../components/director/seoSections';
 import { GbpIntelligence } from '../components/director/gbpSections';
 import { TikTokIntelligence } from '../components/director/tiktokSections';
 import { ViralIntelligence } from '../components/director/viralIntelSections';
+import { CreateStudio } from '../components/director/createStudio';
 import { AutomationCenter } from '../components/director/automationSections';
 
-type Key = 'overview' | 'viralintel' | 'viral' | 'reviewintel' | 'seo' | 'gbp' | 'tiktok' | 'avatar' | 'automation';
+type Key = 'overview' | 'viralintel' | 'create' | 'viral' | 'reviewintel' | 'seo' | 'gbp' | 'tiktok' | 'avatar' | 'automation';
 
 const TABS: { key: Key; label: string; icon: string; render: () => ReactNode }[] = [
   { key: 'overview', label: 'Revenue Intel (MSOS)', icon: '💵', render: () => <JobsIntel /> },
   { key: 'viralintel', label: 'Viral Intelligence', icon: '🧠', render: () => <ViralIntelligence /> },
+  { key: 'create', label: 'Create', icon: '✍️', render: () => <CreateStudio /> },
   { key: 'viral', label: 'Viral Engine', icon: '🔥', render: () => <ViralEngine /> },
   { key: 'reviewintel', label: 'Review Intel', icon: '💬', render: () => <ReviewIntel /> },
   { key: 'seo', label: 'SEO (Search Console)', icon: '🔎', render: () => <SeoConsole /> },

@@ -36,7 +36,7 @@ interface Generated {
   cost: GenerationCost;
 }
 
-export default function ScriptWriter() {
+export default function ScriptWriter({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
@@ -100,7 +100,7 @@ export default function ScriptWriter() {
 
   return (
     <>
-      <PageHeader title="Script Writer" subtitle="Hooks, scripts, shot lists" />
+      {!embedded && <PageHeader title="Script Writer" subtitle="Hooks, scripts, shot lists" />}
 
       <div className="card stack">
         <TextField label="Topic" value={topic} onChange={setTopic} placeholder="Late-night roadside blowout on I-95" />

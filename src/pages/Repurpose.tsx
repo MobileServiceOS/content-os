@@ -39,7 +39,7 @@ function packToText(r: RepurposeResult): string {
   ].join('\n\n');
 }
 
-export default function Repurpose() {
+export default function Repurpose({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
@@ -90,7 +90,7 @@ export default function Repurpose() {
 
   return (
     <>
-      <PageHeader title="Repurpose Content" subtitle="One idea into many formats" />
+      {!embedded && <PageHeader title="Repurpose Content" subtitle="One idea into many formats" />}
 
       <div className="card stack">
         <TextArea label="Source (story, concept, caption, or script)" value={source} onChange={setSource} placeholder="A roadside blowout fix on I-95 at night" />

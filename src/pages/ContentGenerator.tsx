@@ -41,7 +41,7 @@ interface Generated {
   cost: GenerationCost;
 }
 
-export default function ContentGenerator() {
+export default function ContentGenerator({ embedded = false }: { embedded?: boolean } = {}) {
   const { brand, businessId } = useBusiness();
   const { user } = useAuth();
   const { entries, recordMany, recordCost } = useGenerationHistory();
@@ -117,7 +117,7 @@ export default function ContentGenerator() {
 
   return (
     <>
-      <PageHeader title="Content Generator" subtitle="Hooks, captions, CTAs & more" />
+      {!embedded && <PageHeader title="Content Generator" subtitle="Hooks, captions, CTAs & more" />}
 
       <div className="card stack">
         <div className="grid grid-2">
