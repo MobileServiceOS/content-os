@@ -9,7 +9,6 @@ import PageHeader from '../components/PageHeader';
 import { JobsIntel } from '../components/director/msosSections';
 import { ViralEngine } from '../components/director/viralSections';
 import { ReviewIntel } from '../components/director/reviewSections';
-import { AvatarStudio } from '../components/director/avatarSections';
 import { SeoConsole } from '../components/director/seoSections';
 import { GbpIntelligence } from '../components/director/gbpSections';
 import { TikTokIntelligence } from '../components/director/tiktokSections';
@@ -19,7 +18,6 @@ import { ReplyStudio } from '../components/director/replyStudio';
 import { AutomationCenter } from '../components/director/automationSections';
 import GbpStudio from './GbpStudio';
 import SeoStudio from './SeoStudio';
-import Media from './Media';
 
 // Analysis on top, the matching create tool below — so insight drives creation
 // in one tab (Wave 0.2 studio merge).
@@ -39,7 +37,7 @@ function WithCreate({ analysis, studio, label }: { analysis: ReactNode; studio: 
   );
 }
 
-type Key = 'overview' | 'viralintel' | 'create' | 'viral' | 'reviewintel' | 'seo' | 'gbp' | 'tiktok' | 'avatar' | 'automation';
+type Key = 'overview' | 'viralintel' | 'create' | 'viral' | 'reviewintel' | 'seo' | 'gbp' | 'tiktok' | 'automation';
 
 const TABS: { key: Key; label: string; icon: string; render: () => ReactNode }[] = [
   { key: 'overview', label: 'Revenue Intel (MSOS)', icon: '💵', render: () => <JobsIntel /> },
@@ -50,7 +48,6 @@ const TABS: { key: Key; label: string; icon: string; render: () => ReactNode }[]
   { key: 'seo', label: 'SEO (Search Console)', icon: '🔎', render: () => <WithCreate analysis={<SeoConsole />} studio={<SeoStudio embedded />} label="Create SEO content" /> },
   { key: 'gbp', label: 'GBP Intelligence', icon: '📍', render: () => <WithCreate analysis={<GbpIntelligence />} studio={<GbpStudio embedded />} label="Create a GBP post" /> },
   { key: 'tiktok', label: 'TikTok', icon: '🎵', render: () => <TikTokIntelligence /> },
-  { key: 'avatar', label: 'Avatar Studio', icon: '🎭', render: () => <WithCreate analysis={<AvatarStudio />} studio={<Media embedded />} label="Generate media" /> },
   { key: 'automation', label: 'Automation', icon: '🤖', render: () => <AutomationCenter /> },
 ];
 

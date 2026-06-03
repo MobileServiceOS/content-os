@@ -9,14 +9,16 @@ import ContentGenerator from '../../pages/ContentGenerator';
 import ScriptWriter from '../../pages/ScriptWriter';
 import Repurpose from '../../pages/Repurpose';
 import NewJob from '../../pages/NewJob';
+import Media from '../../pages/Media';
 
-type Tool = 'newjob' | 'caption' | 'script' | 'repurpose';
+type Tool = 'newjob' | 'caption' | 'script' | 'repurpose' | 'media';
 
 const TOOLS: { key: Tool; label: string; icon: string; render: () => ReactNode }[] = [
   { key: 'newjob', label: 'New Job → Posts', icon: '⚡', render: () => <NewJob embedded /> },
   { key: 'caption', label: 'Caption / Hook', icon: '✨', render: () => <ContentGenerator embedded /> },
   { key: 'script', label: 'Script', icon: '🎬', render: () => <ScriptWriter embedded /> },
   { key: 'repurpose', label: 'Repurpose', icon: '♻️', render: () => <Repurpose embedded /> },
+  { key: 'media', label: 'Media', icon: '🖼️', render: () => <Media embedded /> },
 ];
 
 export function CreateStudio() {
