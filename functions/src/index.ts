@@ -23,6 +23,7 @@ import * as gbp from './gbp';
 import * as social from './social';
 import { runAutoSync } from './autoSync';
 import { runWeeklyDigest } from './digest';
+import { runDailyAlerts } from './alerts';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -317,5 +318,15 @@ export const weeklyDigest = onSchedule(
   async () => {
     const summary = await runWeeklyDigest(RESEND_API_KEY.value(), DIGEST_FROM.value(), Date.now());
     logger.info('weeklyDigest complete', summary);
+  },
+);
+
+// Daily 07:00 ET (after the 06:00 sync): email owners only when something urgent
+// is true (revenue drop / recurring complaint), deduped so it never re-nags.
+export const dailyAlerts = onSchedule(
+  { schedule: 'every day 07:00', timeZone: 'America/New_York', secrets: [RESEND_API_KEY], timeoutSeconds: 540 },
+  async () => {
+    const summary = await runDailyAlerts(RESEND_API_KEY.value(), DIGEST_FROM.value(), Date.now());
+    logger.info('dailyAlerts complete', summary);
   },
 );
