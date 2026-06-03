@@ -100,6 +100,12 @@ export default function Login() {
         >
           {mode === 'login' ? 'Need an account? Sign up' : 'Have an account? Sign in'}
         </button>
+
+        <p className="muted" style={{ textAlign: 'center', fontSize: '0.74rem', margin: 0 }}>
+          <a href={`${import.meta.env.BASE_URL}terms.html`}>Terms of Service</a>
+          {' · '}
+          <a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy Policy</a>
+        </p>
       </div>
     </div>
   );

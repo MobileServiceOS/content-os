@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Content OS</title>
+  <meta name="description" content="Privacy Policy for Content OS — how we handle your data and connected-platform information." />
+  <style>
+    :root { --bg:#070b14; --card:#121a2c; --text:#eef4fb; --dim:#9fb0cc; --orange:#ff7a1a; --cyan:#22c9f5; --border:rgba(94,196,240,.18); }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#070b14; color:var(--text); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background-image: radial-gradient(900px 500px at 100% -10%, rgba(255,122,26,.16), transparent 60%), radial-gradient(800px 460px at -10% 110%, rgba(34,201,245,.14), transparent 58%); background-attachment:fixed; }
+    .wrap { max-width:820px; margin:0 auto; padding:40px 22px 80px; }
+    .brand { font-weight:800; letter-spacing:-.02em; font-size:1.05rem; background:linear-gradient(115deg,#ffc24b,#ff7a1a 42%,#22c9f5); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    h1 { font-size:2rem; margin:.4em 0 .1em; letter-spacing:-.02em; }
+    .updated { color:var(--dim); font-size:.9rem; margin-bottom:28px; }
+    .card { background:rgba(18,26,44,.66); border:1px solid var(--border); border-radius:16px; padding:26px 28px; backdrop-filter:blur(14px); }
+    h2 { font-size:1.18rem; margin:1.6em 0 .4em; color:#fff; }
+    h2:first-of-type { margin-top:0; }
+    a { color:var(--cyan); }
+    ul { padding-left:20px; }
+    li { margin-bottom:6px; }
+    .dim { color:var(--dim); }
+    code { background:rgba(255,255,255,.06); padding:1px 6px; border-radius:5px; font-size:.92em; }
+    footer { margin-top:30px; color:var(--dim); font-size:.85rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">✦ Content OS</div>
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated: June 3, 2026</div>
+    <div class="card">
+      <p>Content OS ("Content OS," "we," "us") is a marketing-intelligence tool for mobile-service
+        businesses. This policy explains what information we collect, how we use it, and the choices you have.
+        We only access data you explicitly authorize, and we use it solely to provide the service to you.</p>
+
+      <h2>1. Information we collect</h2>
+      <ul>
+        <li><strong>Account information</strong> you provide when you sign up — your email address and display name (authentication is handled by Google Firebase Authentication).</li>
+        <li><strong>Connected-platform data</strong>, only after you authorize a connection via that platform's official OAuth consent screen:
+          <ul>
+            <li><strong>TikTok</strong> — your profile name/avatar, follower and like counts, and your own videos' public metrics (views, likes, comments, shares), via the TikTok Login Kit and Display API. With the Content Posting API (if enabled and approved), we publish videos <em>you</em> choose to <em>your own</em> account.</li>
+            <li><strong>Google Search Console</strong> — your site's search metrics (clicks, impressions, position, queries).</li>
+            <li><strong>Google Business Profile</strong> — your profile's performance metrics and reviews; and, if enabled, local posts you create.</li>
+            <li><strong>Mobile Service OS</strong> — your business's job and revenue records, read-only, as the signed-in user.</li>
+          </ul>
+        </li>
+        <li><strong>Authorization tokens</strong> for the platforms you connect, stored securely server-side (see Security). These are never exposed to your browser or to other users.</li>
+        <li><strong>Content you create</strong> in the app (captions, posts, notes) and basic usage data needed to operate the product.</li>
+      </ul>
+
+      <h2>2. How we use information</h2>
+      <p>To provide and improve the service for you: to display your performance dashboards and revenue
+        analytics, generate content recommendations and pre-publish scores, and — only when you take that
+        action — to publish your own content to your own connected accounts. We do <strong>not</strong> sell
+        your data, and we do <strong>not</strong> use it for advertising.</p>
+
+      <h2>3. TikTok data</h2>
+      <p>We access TikTok information only through TikTok's official APIs and only with your consent. We use it
+        to show you analytics about your own account and to publish your own content at your direction. We do
+        not share TikTok data with third parties, do not use it to build profiles for advertising, and you can
+        revoke our access at any time (see Your choices). Our use of TikTok data complies with the
+        <a href="https://developers.tiktok.com/doc/tiktok-developer-terms-of-service">TikTok Developer Terms</a>.</p>
+
+      <h2>4. Google user data (Limited Use)</h2>
+      <p>Content OS's use and transfer of information received from Google APIs adheres to the
+        <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>,
+        including its Limited Use requirements. We use Google Business Profile and Search Console data only to
+        provide user-facing features in the app; we do not sell it, use it for ads, or allow humans to read it
+        except as needed for support with your consent, for security, or to comply with law.</p>
+
+      <h2>5. Storage &amp; security</h2>
+      <p>Data is stored in Google Cloud / Firebase (Firestore). Traffic is encrypted in transit. OAuth refresh
+        tokens live in access-restricted server-side storage reachable only by our backend functions — never
+        by the browser and never by other tenants. Each business's data is isolated to its own tenant.</p>
+
+      <h2>6. How we share information</h2>
+      <p>We do not sell your information. We share it only with infrastructure providers that operate the
+        service (Google Cloud / Firebase), and only as needed to run it, or when required by law.</p>
+
+      <h2>7. Retention &amp; deletion</h2>
+      <p>Disconnecting a platform deletes its stored authorization token and clears its synced data. You can
+        request deletion of your account and associated data at any time by contacting us; we will delete it
+        within 30 days, except where retention is required by law.</p>
+
+      <h2>8. Your choices</h2>
+      <ul>
+        <li>Disconnect any platform inside the app at any time.</li>
+        <li>Revoke our access directly at the platform (e.g., TikTok app settings, your Google Account permissions).</li>
+        <li>Request access to, correction of, or deletion of your data via the contact below.</li>
+      </ul>
+
+      <h2>9. Children</h2>
+      <p>Content OS is a business tool not directed to children and is not intended for anyone under 16.</p>
+
+      <h2>10. Changes</h2>
+      <p>We may update this policy; we will revise the "Last updated" date above and, for material changes,
+        provide notice in the app.</p>
+
+      <h2>11. Contact</h2>
+      <p>Questions or data requests: <a href="mailto:dkreid12@gmail.com">dkreid12@gmail.com</a>.</p>
+
+      <footer>See also our <a href="terms.html">Terms of Service</a>.</footer>
+    </div>
+  </div>
+</body>
+</html>
