@@ -3,10 +3,11 @@
 // feed, proactive alerts, and a pre-publish content score — all from live
 // connected data (MSOS revenue, TikTok, Search Console, owner reviews). No mock
 // numbers: when nothing's connected it points to the Director to connect.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { useBusiness } from '../context/BusinessContext';
+import { useAuth } from '../context/AuthContext';
 import { useMsosJobs } from '../hooks/useMsosJobs';
 import { useSocialPlatform } from '../hooks/useSocialPlatform';
 import { useSearchConsole } from '../hooks/useSearchConsole';
@@ -15,6 +16,7 @@ import { money } from '../lib/director/msosWidgets';
 import { parseReviews, analyzeReviews, type ReviewVocab } from '../lib/director/reviewIntel';
 import { predictContentScore, type ScoreBand } from '../lib/director/viralIntel';
 import { cockpitMoves, cockpitAlerts, type CockpitMove, type AlertTone } from '../lib/director/homeCockpit';
+import { buildSnapshot, persistCockpitSnapshot } from '../lib/director/cockpitSnapshot';
 import type { SocialVocab } from '../lib/director/social/types';
 
 const REVIEW_STORE_KEY = 'reviewIntel.text';
@@ -55,7 +57,8 @@ function ContentScore({ vocab, social }: { vocab: SocialVocab; social: ReturnTyp
 }
 
 export default function Dashboard() {
-  const { brand } = useBusiness();
+  const { brand, businessId } = useBusiness();
+  const { user } = useAuth();
   const { jobs, loading, needsConnect, account } = useMsosJobs();
   const tk = useSocialPlatform('tiktok');
   const sc = useSearchConsole();
@@ -77,11 +80,22 @@ export default function Dashboard() {
     return analyzeReviews(parseReviews(text), vv);
   }, [jobs]);
 
-  const now = Date.now();
+  const [now] = useState(() => Date.now()); // stable per mount (month windows + snapshot stamp)
   const input = { jobs, social: tk.data, sc: sc.data, reviews, vocab, now };
   const summary = useMemo(() => ownerSummary(jobs, now), [jobs, now]);
   const moves = useMemo(() => cockpitMoves(input), [jobs, tk.data, sc.data, reviews, vocab, now]);
   const alerts = useMemo(() => cockpitAlerts(input), [jobs, tk.data, sc.data, reviews, vocab, now]);
+
+  // Persist the cockpit snapshot (throttled to ~once/6h) so the Monday digest
+  // function can email these numbers — the server can't read MSOS directly.
+  useEffect(() => {
+    if (!businessId || needsConnect || loading || jobs.length === 0) return;
+    const snap = buildSnapshot({
+      businessId, businessName: brand?.businessName ?? 'Your business',
+      ownerEmail: user?.email ?? null, now, summary, moves, alerts,
+    });
+    void persistCockpitSnapshot(snap).catch(() => {}); // best-effort; denied until cockpit rules deploy
+  }, [businessId, needsConnect, loading, jobs.length, summary, moves, alerts, brand, user, now]);
 
   const title = brand?.businessName ?? 'Home';
 

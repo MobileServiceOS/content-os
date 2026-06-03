@@ -81,6 +81,11 @@ export const taskDoc = (businessId: string, id: string): DocumentReference =>
 export const agentLogsCol = (businessId: string): CollectionReference =>
   collection(db, 'businesses', businessId, 'agentLogs');
 
+// Cockpit snapshot — the daily Home summary the client persists so the Monday
+// digest function can email it server-side (the server can't read MSOS directly).
+export const cockpitSnapshotDoc = (businessId: string): DocumentReference =>
+  doc(db, 'businesses', businessId, 'cockpit', 'latest');
+
 // --- Analytics (post-publication performance) ---
 export const postPerformanceCol = (businessId: string): CollectionReference =>
   collection(db, 'businesses', businessId, 'postPerformance');

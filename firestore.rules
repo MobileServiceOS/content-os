@@ -207,6 +207,16 @@ service cloud.firestore {
         allow read: if isMember(bid);
         allow write: if false;
       }
+
+      // Cockpit snapshot — a client-written daily summary (revenue, top moves,
+      // alerts) the Monday digest function reads server-side. The server can't
+      // read MSOS (Option B is client-only), so the client persists this derived
+      // summary of its own data. Members read; owners/managers write their tenant.
+      match /cockpit/{doc} {
+        allow read: if isMember(bid);
+        allow create, update: if hasRole(bid, ['owner', 'manager']) && sameTenant(bid);
+        allow delete: if hasRole(bid, ['owner']);
+      }
     }
 
     // Default deny everything else.
