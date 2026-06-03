@@ -4,6 +4,8 @@
 // Both verify Firebase Auth + tenant membership. Provider keys live only here
 // (Functions secrets) — never in the browser.
 import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
+import * as logger from 'firebase-functions/logger';
 import { defineSecret } from 'firebase-functions/params';
 import { initializeApp } from 'firebase-admin/app';
 import { assertMember } from './auth';
@@ -19,6 +21,7 @@ import {
 } from './searchConsole';
 import * as gbp from './gbp';
 import * as social from './social';
+import { runAutoSync } from './autoSync';
 import type { GenerateData, GenKind, LlmProvider, Usage } from './types';
 
 initializeApp();
@@ -283,3 +286,20 @@ export const socialDisconnect = onCall(async (request) => {
   await social.disconnectPlatform(connectorOr(data.platform), data.businessId);
   return { ok: true };
 });
+
+// --- Wave 2: nightly auto-sync ---
+// Refreshes Search Console + GBP + TikTok for every connected business once a
+// day, so the cockpit is fresh without anyone pressing "Sync now". Runs as the
+// Admin SDK (no user context); reuses the same sync cores as the onCall
+// handlers. Per-business failures are isolated inside runAutoSync.
+const autoSyncSecrets = [SC_OAUTH_CLIENT_ID, SC_OAUTH_CLIENT_SECRET, TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET];
+export const nightlySync = onSchedule(
+  { schedule: 'every day 06:00', timeZone: 'America/New_York', secrets: autoSyncSecrets, timeoutSeconds: 540, memory: '512MiB' },
+  async () => {
+    const summary = await runAutoSync({
+      scClientId: SC_OAUTH_CLIENT_ID.value(), scSecret: SC_OAUTH_CLIENT_SECRET.value(),
+      tiktokKey: TIKTOK_CLIENT_KEY.value(), tiktokSecret: TIKTOK_CLIENT_SECRET.value(),
+    });
+    logger.info('nightlySync complete', summary);
+  },
+);
