@@ -6,7 +6,7 @@
 import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import * as logger from 'firebase-functions/logger';
-import { defineSecret, defineString } from 'firebase-functions/params';
+import { defineSecret } from 'firebase-functions/params';
 import { initializeApp } from 'firebase-admin/app';
 import { assertMember } from './auth';
 import {
@@ -30,11 +30,12 @@ const scSecrets = [SC_OAUTH_CLIENT_ID, SC_OAUTH_CLIENT_SECRET, SC_REDIRECT_URI];
 const TIKTOK_CLIENT_KEY = defineSecret('TIKTOK_CLIENT_KEY');
 const TIKTOK_CLIENT_SECRET = defineSecret('TIKTOK_CLIENT_SECRET');
 const socialSecrets = [TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET];
-// Weekly digest email (Resend). API key is a secret (set before deploy);
-// the From address is a plain param (default = Resend's test sender, which
-// works without domain verification — override once your domain is verified).
+// Weekly digest + alert email (Resend). API key is a secret (set before deploy).
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
-const DIGEST_FROM = defineString('DIGEST_FROM', { default: 'Content OS <onboarding@resend.dev>' });
+// Sender for the digest/alert emails. Not a secret; Resend's onboarding domain
+// delivers to the account owner with no domain verification. Swap for a verified
+// domain sender (e.g. "Wheel Rush <digest@wheelrush.net>") when sending broadly.
+const DIGEST_FROM = 'Content OS <onboarding@resend.dev>';
 function socialCreds(platform: string): { clientId: string; secret: string } {
   if (platform === 'tiktok') return { clientId: TIKTOK_CLIENT_KEY.value(), secret: TIKTOK_CLIENT_SECRET.value() };
   throw new HttpsError('failed-precondition', `Platform ${platform} is not configured.`);
@@ -222,7 +223,7 @@ export const nightlySync = onSchedule(
 export const weeklyDigest = onSchedule(
   { schedule: 'every monday 08:00', timeZone: 'America/New_York', secrets: [RESEND_API_KEY], timeoutSeconds: 540 },
   async () => {
-    const summary = await runWeeklyDigest(RESEND_API_KEY.value(), DIGEST_FROM.value(), Date.now());
+    const summary = await runWeeklyDigest(RESEND_API_KEY.value(), DIGEST_FROM, Date.now());
     logger.info('weeklyDigest complete', summary);
   },
 );
@@ -232,7 +233,7 @@ export const weeklyDigest = onSchedule(
 export const dailyAlerts = onSchedule(
   { schedule: 'every day 07:00', timeZone: 'America/New_York', secrets: [RESEND_API_KEY], timeoutSeconds: 540 },
   async () => {
-    const summary = await runDailyAlerts(RESEND_API_KEY.value(), DIGEST_FROM.value(), Date.now());
+    const summary = await runDailyAlerts(RESEND_API_KEY.value(), DIGEST_FROM, Date.now());
     logger.info('dailyAlerts complete', summary);
   },
 );
