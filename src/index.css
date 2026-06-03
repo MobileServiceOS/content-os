@@ -1,36 +1,40 @@
-/* Content OS — vibrant modern dashboard theme */
+/* Content OS — Wheel Rush futuristic theme: fiery orange + electric cyan on deep
+   navy, echoing the brand mark (speed, energy, motion). */
 :root {
-  --bg: #090d18;
-  --surface: rgba(23, 29, 48, 0.72);
-  --surface-solid: #161c2e;
-  --surface-2: rgba(40, 49, 78, 0.55);
-  --border: rgba(130, 148, 210, 0.16);
-  --border-strong: rgba(130, 148, 210, 0.32);
-  --text: #eef1fb;
-  --text-dim: #98a4c6;
+  --bg: #070b14;
+  --surface: rgba(18, 26, 44, 0.66);
+  --surface-solid: #121a2c;
+  --surface-2: rgba(34, 48, 78, 0.5);
+  --border: rgba(94, 196, 240, 0.16);
+  --border-strong: rgba(255, 138, 31, 0.42);
+  --text: #eef4fb;
+  --text-dim: #8fa3c4;
 
-  --primary: #7c5cff;
-  --primary-2: #5b8cff;
-  --grad-primary: linear-gradient(135deg, #7c5cff 0%, #5b8cff 100%);
-  --grad-brand: linear-gradient(120deg, #a78bfa 0%, #5b8cff 45%, #38bdf8 100%);
+  /* Brand duo: orange primary, electric cyan secondary. */
+  --primary: #ff7a1a;
+  --primary-2: #22c9f5;
+  --grad-primary: linear-gradient(135deg, #ff9a2b 0%, #ff6a00 100%);
+  --grad-brand: linear-gradient(115deg, #ffc24b 0%, #ff7a1a 42%, #22c9f5 100%);
+  --glow-orange: rgba(255, 122, 26, 0.55);
+  --glow-cyan: rgba(34, 201, 245, 0.5);
 
-  --danger: #ff5c7a;
+  --danger: #ff5a52;
   --success: #2fe0a0;
-  --warning: #ffc24b;
+  --warning: #ffb020;
 
-  /* category accents */
-  --c-violet: #a78bfa;
-  --c-blue: #5b8cff;
-  --c-cyan: #38bdf8;
+  /* category accents — biased to the brand's warm/cool range */
+  --c-violet: #9b8cff;
+  --c-blue: #3b9eff;
+  --c-cyan: #22c9f5;
   --c-emerald: #2fe0a0;
-  --c-amber: #ffc24b;
-  --c-pink: #f472b6;
-  --c-orange: #fb923c;
+  --c-amber: #ffb020;
+  --c-pink: #ff6a9c;
+  --c-orange: #ff7a1a;
 
   --radius: 18px;
   --radius-sm: 11px;
   --space: 16px;
-  --shadow: 0 10px 34px rgba(5, 8, 20, 0.5);
+  --shadow: 0 12px 38px rgba(2, 6, 16, 0.6);
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -44,16 +48,17 @@ body {
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
   background:
-    radial-gradient(1100px 620px at 100% -8%, rgba(124, 92, 255, 0.20), transparent 60%),
-    radial-gradient(980px 560px at -8% 108%, rgba(56, 189, 248, 0.16), transparent 58%),
-    radial-gradient(700px 500px at 50% 120%, rgba(244, 114, 182, 0.08), transparent 60%),
+    radial-gradient(1150px 640px at 100% -10%, rgba(255, 122, 26, 0.20), transparent 60%),
+    radial-gradient(1000px 580px at -10% 110%, rgba(34, 201, 245, 0.18), transparent 58%),
+    radial-gradient(760px 520px at 50% 124%, rgba(255, 178, 32, 0.07), transparent 60%),
     var(--bg);
   background-attachment: fixed;
 }
 
 a { color: var(--primary-2); text-decoration: none; }
+a:hover { color: #6fdcff; }
 
-h1, h2, h3 { line-height: 1.18; margin: 0 0 0.4em; letter-spacing: -0.01em; }
+h1, h2, h3 { line-height: 1.18; margin: 0 0 0.4em; letter-spacing: -0.015em; }
 h1 { font-size: 1.6rem; font-weight: 800; }
 h2 { font-size: 1.18rem; font-weight: 700; }
 h3 { font-size: 1.02rem; }
@@ -70,9 +75,13 @@ input, select, textarea, button { font: inherit; }
 
 .wordmark {
   font-weight: 800; font-size: 1.12rem; letter-spacing: -0.02em;
-  background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; color: transparent;
+  background: var(--grad-brand); background-size: 220% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: brandflow 7s ease-in-out infinite;
 }
-.wordmark .spark { -webkit-text-fill-color: var(--c-violet); margin-right: 5px; }
+@keyframes brandflow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@media (prefers-reduced-motion: reduce) { .wordmark { animation: none; } }
+.wordmark .spark { -webkit-text-fill-color: var(--primary); margin-right: 5px; filter: drop-shadow(0 0 8px var(--glow-orange)); }
 
 .side-head {
   order: 0; position: sticky; top: 0; z-index: 20;
@@ -101,9 +110,9 @@ input, select, textarea, button { font: inherit; }
 .side-links a:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
 .side-links a.active {
   color: #fff;
-  background: linear-gradient(135deg, rgba(124, 92, 255, 0.30), rgba(91, 140, 255, 0.18));
-  border-color: rgba(124, 92, 255, 0.45);
-  box-shadow: 0 4px 16px rgba(124, 92, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 122, 26, 0.28), rgba(34, 201, 245, 0.16));
+  border-color: rgba(255, 122, 26, 0.5);
+  box-shadow: 0 4px 18px rgba(255, 122, 26, 0.26);
 }
 .nav-group { display: none; }
 
@@ -123,18 +132,27 @@ input, select, textarea, button { font: inherit; }
   }
   .side-links a { font-size: 0.9rem; }
   .nav-group {
-    display: block; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.09em;
-    font-weight: 700; color: var(--c-violet); opacity: 0.8; padding: 14px 12px 5px;
+    display: block; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.12em;
+    font-weight: 700; color: var(--primary-2); opacity: 0.85; padding: 14px 12px 5px;
   }
   .app-main { padding: 28px; padding-bottom: 28px; }
 }
 
 /* Cards & grid */
 .card {
+  position: relative;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: var(--space); box-shadow: var(--shadow);
-  backdrop-filter: blur(13px) saturate(135%); -webkit-backdrop-filter: blur(13px) saturate(135%);
+  backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
+/* Hairline highlight along the top edge — the "glass" catch-light. */
+.card::after {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 138, 31, 0.5), rgba(34, 201, 245, 0.5), transparent);
+  opacity: 0.6; pointer-events: none;
+}
+.card:hover { border-color: var(--border-strong); box-shadow: var(--shadow), 0 0 24px rgba(255, 122, 26, 0.1); }
 .grid { display: grid; gap: 12px; }
 .grid-2 { grid-template-columns: 1fr; }
 .grid-3 { grid-template-columns: 1fr; }
@@ -158,8 +176,8 @@ input, select, textarea, button { font: inherit; }
 .btn:hover { background: rgba(255, 255, 255, 0.09); border-color: var(--border-strong); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--grad-primary); border: none; color: #fff; box-shadow: 0 6px 20px rgba(124, 92, 255, 0.35); }
-.btn-primary:hover { filter: brightness(1.08); box-shadow: 0 10px 26px rgba(124, 92, 255, 0.5); }
+.btn-primary { background: var(--grad-primary); border: none; color: #fff; box-shadow: 0 6px 22px var(--glow-orange); }
+.btn-primary:hover { filter: brightness(1.08); box-shadow: 0 10px 30px var(--glow-orange); }
 .btn-danger { background: rgba(255, 92, 122, 0.1); border-color: rgba(255, 92, 122, 0.4); color: var(--danger); }
 .btn-danger:hover { background: rgba(255, 92, 122, 0.18); }
 .btn-block { width: 100%; }
@@ -181,7 +199,7 @@ input, select, textarea, button { font: inherit; }
   border: 1px solid var(--border); background: rgba(10, 14, 26, 0.55); color: var(--text);
   transition: border-color 0.14s ease, box-shadow 0.14s ease;
 }
-.input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.25); }
+.input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 122, 26, 0.25); }
 .textarea { min-height: 96px; resize: vertical; }
 
 /* Tags & badges */
