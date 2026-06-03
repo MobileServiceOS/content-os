@@ -1,6 +1,8 @@
 // Navigation. Desktop: a left sidebar with grouped links. Mobile: a top brand
 // bar + a scrollable bottom link bar (the sidebar flattens via CSS). Generator
-// links are hidden from viewers; Fingerprints is owner-only.
+// links are hidden from viewers. Wave 0 subtraction: Fingerprints (dev tool) and
+// Engage (thin duplicate of Social) are removed from the nav; their routes and
+// pages remain reachable by direct URL — see App.tsx.
 import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -28,13 +30,11 @@ const ITEMS: Item[] = [
   { to: '/media', label: 'Media', icon: '🖼️', creatorsOnly: true, group: 'Create' },
   { to: '/gbp', label: 'GBP', icon: '📍', creatorsOnly: true, group: 'Local' },
   { to: '/seo', label: 'SEO', icon: '🔎', creatorsOnly: true, group: 'Local' },
-  { to: '/engagement', label: 'Engage', icon: '🤝', creatorsOnly: true, group: 'Local' },
   { to: '/tasks', label: 'Tasks', icon: '☑️', group: 'Manage' },
   { to: '/approvals', label: 'Approvals', icon: '🛡️', group: 'Manage' },
   { to: '/library', label: 'Library', icon: '📚', group: 'Manage' },
   { to: '/calendar', label: 'Calendar', icon: '🗓️', group: 'Manage' },
   { to: '/brand', label: 'Brand', icon: '🎨', group: 'Settings' },
-  { to: '/fingerprints', label: 'Fingerprints', icon: '🔬', ownerOnly: true, group: 'Settings' },
 ];
 
 export default function Nav() {

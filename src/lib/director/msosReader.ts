@@ -52,6 +52,14 @@ export function normalizeJob(raw: Record<string, unknown>, id: string, nameByUid
     tireSize: str(raw.tireSize),
     customer: str(raw.customerName),
     ticketUsd: toNum(raw.revenue),
+    // Direct costs MSOS *stores* on the job doc. Verified against MSOS saveJob
+    // (App.tsx) + AddJob inputs: tire/material/parts/diagnostic are persisted
+    // fields. labor and travel are NOT stored — MSOS computes them at display
+    // time (laborHours × rate, miles × rate) via the pricing engine. So this is
+    // exact for the tire vertical (flat pricing, no per-job labor field) and
+    // understates cost for labor-heavy mechanic jobs. Porting the rate engine
+    // (needs businesses/{id}/settings) is the refinement when a mechanic tenant
+    // goes live; until then profit reads as gross-of-stored-costs, not net.
     costUsd: toNum(raw.tireCost) + toNum(raw.materialCost) + toNum(raw.miscCost) + toNum(raw.partsCost) + toNum(raw.diagnosticFee),
     status: toStatus(raw.status),
     completedAt: toEpoch(raw),
