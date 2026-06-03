@@ -94,6 +94,13 @@ async function apiGet(token: string, url: string): Promise<Record<string, unknow
   if (!res.ok) throw Object.assign(new Error(`${res.status}: ${JSON.stringify(json)}`), { status: res.status });
   return json;
 }
+// WRITE — used only by publishLocalPost (gated behind PUBLISH_ENABLED in index.ts).
+async function apiPost(token: string, url: string, body: unknown): Promise<Record<string, unknown>> {
+  const res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!res.ok) throw new Error(((json.error as Record<string, unknown>)?.message as string) || `${res.status}: ${JSON.stringify(json)}`);
+  return json;
+}
 const ymd = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 const dateParts = (ms: number) => { const d = new Date(ms); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, day: d.getUTCDate() }; };
 
@@ -109,6 +116,25 @@ async function firstLocation(token: string): Promise<{ account: string; location
     }
   }
   return null;
+}
+
+export interface GbpPostPayload { summary: string; ctaUrl?: string; mediaUrl?: string }
+/** Create a Google Business Profile local post (WRITE). Gated behind
+ *  PUBLISH_ENABLED in index.ts; needs the project allowlisted + business.manage. */
+export async function publishLocalPost(bid: string, clientId: string, secret: string, payload: GbpPostPayload): Promise<{ name: string }> {
+  const refreshToken = await loadRefreshToken(bid);
+  if (!refreshToken) throw new Error('GBP not connected.');
+  const token = await accessTokenFor(clientId, secret, refreshToken);
+  const loc = await firstLocation(token);
+  if (!loc) throw new Error('No Business Profile location found.');
+  const id = loc.location.split('/')[1];
+  const parent = `${loc.account}/locations/${id}`;
+  const body: Record<string, unknown> = { languageCode: 'en-US', summary: payload.summary.slice(0, 1500), topicType: 'STANDARD' };
+  if (payload.ctaUrl) body.callToAction = { actionType: 'LEARN_MORE', url: payload.ctaUrl };
+  if (payload.mediaUrl) body.media = [{ mediaFormat: 'PHOTO', sourceUrl: payload.mediaUrl }];
+  const j = await apiPost(token, `${REVIEWS}/${parent}/localPosts`, body);
+  await setStatus(bid, { lastPublish: { name: j.name ?? null, summary: body.summary, at: Date.now() } });
+  return { name: String(j.name ?? '') };
 }
 
 const DAILY_METRICS = [

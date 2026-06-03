@@ -4,12 +4,16 @@
 // favorites, profile visits, average watch time, completion rate, or
 // followers-gained-over-time — those require TikTok's Business/Research API and
 // are reported as `unavailable` (never faked).
-import { postForm, type PlatformConnector, type SocialData, type SocialVideo } from './framework';
+import { postForm, type PlatformConnector, type SocialData, type SocialVideo, type PublishResult } from './framework';
 
 const AUTHORIZE = 'https://www.tiktok.com/v2/auth/authorize/';
 const TOKEN = 'https://open.tiktokapis.com/v2/oauth/token/';
 const API = 'https://open.tiktokapis.com/v2';
 const SCOPES = 'user.info.basic,user.info.stats,video.list';
+// Publishing needs the Content Posting API product + this scope + app audit.
+// PULL_FROM_URL also requires the video host domain to be URL-prefix-verified
+// in the TikTok developer portal. See docs/PUBLISH-SETUP.md.
+const PUBLISH_SCOPE = 'video.publish';
 
 const UNAVAILABLE = ['reach', 'favorites', 'profileVisits', 'avgWatchTime', 'completionRate', 'followersGained'];
 
@@ -87,5 +91,24 @@ export const tiktok: PlatformConnector = {
       range: { start: times.length ? Math.min(...times) : 0, end: times.length ? Math.max(...times) : 0 },
       unavailable: UNAVAILABLE,
     };
+  },
+
+  publishScopes: PUBLISH_SCOPE,
+  async publish(accessToken, payload): Promise<PublishResult> {
+    if (!payload.videoUrl) throw new Error('TikTok publishing needs a public video URL (PULL_FROM_URL source).');
+    // Direct Post via the Content Posting API. Unaudited apps may only post as
+    // SELF_ONLY (private); PUBLIC requires passing TikTok's app audit.
+    const body = {
+      post_info: {
+        title: payload.caption.slice(0, 2200),
+        privacy_level: payload.privacy ?? 'SELF_ONLY',
+        disable_comment: false, disable_duet: false, disable_stitch: false,
+      },
+      source_info: { source: 'PULL_FROM_URL', video_url: payload.videoUrl },
+    };
+    const j = await apiPost(accessToken, '/post/publish/video/init/', body);
+    const data = j.data as { publish_id?: string } | undefined;
+    if (!data?.publish_id) throw new Error(`TikTok publish failed: ${JSON.stringify(j)}`);
+    return { id: data.publish_id, status: 'PROCESSING' };
   },
 };

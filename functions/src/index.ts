@@ -201,6 +201,52 @@ export const socialDisconnect = onCall(async (request) => {
   return { ok: true };
 });
 
+// --- Wave 3: publish to platforms (GATED) ---
+// Real auto-posting is fully wired but OFF until the platforms grant write
+// access: TikTok Content Posting API (video.publish + app audit) and Google
+// Business Profile write allowlist. Flip PUBLISH_ENABLED to true and redeploy
+// once approved — see docs/PUBLISH-SETUP.md. While false, the endpoints return a
+// clear, catchable "awaiting approval" error so the UI can show the gated state.
+const PUBLISH_ENABLED = false;
+const publishGate = (): void => {
+  if (!PUBLISH_ENABLED) {
+    throw new HttpsError('failed-precondition', 'Publishing is awaiting platform write-API approval (TikTok Content Posting / GBP). See PUBLISH-SETUP.md.');
+  }
+};
+
+/** Publish a video to a social platform (TikTok today). Gated. */
+export const socialPublish = onCall({ secrets: socialSecrets }, async (request) => {
+  const data = request.data as { businessId?: string; platform?: string; caption?: string; videoUrl?: string; privacy?: string };
+  if (!data?.businessId || !data?.platform) throw new HttpsError('invalid-argument', 'businessId and platform are required.');
+  await assertMember(request, data.businessId);
+  publishGate();
+  const c = connectorOr(data.platform);
+  const { clientId, secret } = socialCreds(data.platform);
+  try {
+    return await social.publishPlatform(c, data.businessId, clientId, secret, {
+      caption: data.caption ?? '', videoUrl: data.videoUrl,
+      privacy: data.privacy as social.PublishPayload['privacy'],
+    });
+  } catch (err) {
+    throw new HttpsError('internal', err instanceof Error ? err.message : 'Publish failed.');
+  }
+});
+
+/** Publish a Google Business Profile local post. Gated. */
+export const gbpPublish = onCall({ secrets: gbpSecrets }, async (request) => {
+  const data = request.data as { businessId?: string; summary?: string; ctaUrl?: string; mediaUrl?: string };
+  if (!data?.businessId || !data?.summary) throw new HttpsError('invalid-argument', 'businessId and summary are required.');
+  await assertMember(request, data.businessId);
+  publishGate();
+  try {
+    return await gbp.publishLocalPost(data.businessId, SC_OAUTH_CLIENT_ID.value(), SC_OAUTH_CLIENT_SECRET.value(), {
+      summary: data.summary, ctaUrl: data.ctaUrl, mediaUrl: data.mediaUrl,
+    });
+  } catch (err) {
+    throw new HttpsError('internal', err instanceof Error ? err.message : 'GBP publish failed.');
+  }
+});
+
 // --- Wave 2: nightly auto-sync ---
 // Refreshes Search Console + GBP + TikTok for every connected business once a
 // day, so the cockpit is fresh without anyone pressing "Sync now". Runs as the

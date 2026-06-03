@@ -32,6 +32,20 @@ export interface SocialData {
   unavailable: string[];
 }
 
+/** What to publish. Generic across platforms; a connector uses what it needs. */
+export interface PublishPayload {
+  caption: string;
+  /** TikTok: a publicly fetchable video URL (PULL_FROM_URL source). */
+  videoUrl?: string;
+  /** GBP/others: an optional image URL. */
+  mediaUrl?: string;
+  /** Optional call-to-action label + url (GBP). */
+  ctaLabel?: string;
+  ctaUrl?: string;
+  privacy?: 'PUBLIC_TO_EVERYONE' | 'SELF_ONLY' | 'MUTUAL_FOLLOW_FRIENDS';
+}
+export interface PublishResult { id: string; status: string }
+
 /** A platform plugs in by implementing this. */
 export interface PlatformConnector {
   id: string;
@@ -46,6 +60,11 @@ export interface PlatformConnector {
   sync(accessToken: string): Promise<SocialData>;
   /** Optional token revoke. */
   revoke?(token: string): Promise<void>;
+  /** Optional: publish content. Requires the platform's write scope + app
+   *  review (e.g. TikTok Content Posting API). Absent = read-only connector. */
+  publish?(accessToken: string, payload: PublishPayload): Promise<PublishResult>;
+  /** Extra OAuth scope(s) publishing needs beyond the read scopes (for consent + docs). */
+  publishScopes?: string;
 }
 
 export const REDIRECT_URI = CALLBACK;
@@ -103,6 +122,21 @@ export async function syncPlatform(c: PlatformConnector, bid: string, clientId: 
   }
 }
 
+/** Publish content via the connector (gated: requires write scope + approval). */
+export async function publishPlatform(c: PlatformConnector, bid: string, clientId: string, secret: string, payload: PublishPayload): Promise<PublishResult> {
+  if (!c.publish) throw new Error(`${c.label} publishing is not available yet.`);
+  const refreshToken = await loadRefreshToken(bid, c.id);
+  if (!refreshToken) throw new Error('Not connected.');
+  const accessToken = await c.refresh(clientId, secret, refreshToken);
+  const result = await c.publish(accessToken, payload);
+  // Record the publish on the owner-readable doc so the ROI loop can pick it up.
+  await dataDoc(bid, c.id).set(
+    { lastPublish: { id: result.id, status: result.status, caption: payload.caption, at: Date.now() } },
+    { merge: true },
+  );
+  return result;
+}
+
 export async function disconnectPlatform(c: PlatformConnector, bid: string): Promise<void> {
   const refreshToken = await loadRefreshToken(bid, c.id);
   if (refreshToken && c.revoke) { try { await c.revoke(refreshToken); } catch { /* best effort */ } }
@@ -115,5 +149,20 @@ export async function postForm(url: string, body: Record<string, string>): Promi
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(body).toString() });
   const json = (await res.json()) as Record<string, unknown>;
   if (!res.ok) throw new Error((json.error_description as string) || (json.error as string) || JSON.stringify(json));
+  return json;
+}
+
+/** Authenticated JSON POST (Bearer) — used by publish endpoints. */
+export async function postJsonAuth(url: string, accessToken: string, body: unknown): Promise<Record<string, unknown>> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!res.ok) {
+    const e = (json.error as Record<string, unknown>) || {};
+    throw new Error((e.message as string) || (json.error_description as string) || JSON.stringify(json) || `HTTP ${res.status}`);
+  }
   return json;
 }
